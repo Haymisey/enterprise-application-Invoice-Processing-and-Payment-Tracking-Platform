@@ -19,6 +19,7 @@
     <Project Path="src/Modules/Reporting/Reporting.Infrastructure/Reporting.Infrastructure.csproj" />
   </Folder>
   <Folder Name="/Modules/VendorManagement/">
+    <Project Path="src/Modules/VendorManagement/VendorManagement.Application/VendorManagement.Application.csproj" />
     <Project Path="src/Modules/VendorManagement/VendorManagement.Domain/VendorManagement.Domain.csproj" />
     <Project Path="src/Modules/VendorManagement/VendorManagement.Infrastructure/VendorManagement.Infrastructure.csproj" />
   </Folder>
