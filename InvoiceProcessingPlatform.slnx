@@ -1,0 +1,37 @@
+<Solution>
+  <Folder Name="/API/">
+    <Project Path="src/API/InvoiceProcessingPlatform.API/InvoiceProcessingPlatform.API.csproj" />
+  </Folder>
+  <Folder Name="/Modules/" />
+  <Folder Name="/Modules/InvoiceManagement/">
+    <Project Path="src/Modules/InvoiceManagement/InvoiceManagement.Application/InvoiceManagement.Application.csproj" />
+    <Project Path="src/Modules/InvoiceManagement/InvoiceManagement.Domain/InvoiceManagement.Domain.csproj" />
+    <Project Path="src/Modules/InvoiceManagement/InvoiceManagement.Infrastructure/InvoiceManagement.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/Modules/PaymentTracking/">
+    <Project Path="src/Modules/PaymentTracking/PaymentTracking.Application/PaymentTracking.Application.csproj" />
+    <Project Path="src/Modules/PaymentTracking/PaymentTracking.Domain/PaymentTracking.Domain.csproj" />
+    <Project Path="src/Modules/PaymentTracking/PaymentTracking.Infrastructure/PaymentTracking.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/Modules/Reporting/">
+    <Project Path="src/Modules/Reporting/Reporting.Application/Reporting.Application.csproj" />
+    <Project Path="src/Modules/Reporting/Reporting.Domain/Reporting.Domain.csproj" />
+    <Project Path="src/Modules/Reporting/Reporting.Infrastructure/Reporting.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/Modules/VendorManagement/">
+    <Project Path="src/Modules/VendorManagement/VendorManagement.Domain/VendorManagement.Domain.csproj" />
+    <Project Path="src/Modules/VendorManagement/VendorManagement.Infrastructure/VendorManagement.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/Services/" />
+  <Folder Name="/Services/AIClassification/">
+    <Project Path="src/Services/AIClassification/AIClassification.API/AIClassification.API.csproj" />
+    <Project Path="src/Services/AIClassification/AIClassification.Application/AIClassification.Application.csproj" />
+    <Project Path="src/Services/AIClassification/AIClassification.Domain/AIClassification.Domain.csproj" />
+    <Project Path="src/Services/AIClassification/AIClassification.Infrastructure/AIClassification.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/Shared/">
+    <Project Path="src/Shared/Shared.Application/Shared.Application.csproj" />
+    <Project Path="src/Shared/Shared.Domain/Shared.Domain.csproj" />
+    <Project Path="src/Shared/Shared.Infrastructure/Shared.Infrastructure.csproj" />
+  </Folder>
+</Solution>

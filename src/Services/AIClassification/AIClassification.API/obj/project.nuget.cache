@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "IEi0Wx5Kxic=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Services\\AIClassification\\AIClassification.API\\AIClassification.API.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\hayma\\.nuget\\packages\\microsoft.aspnetcore.openapi\\10.0.0\\microsoft.aspnetcore.openapi.10.0.0.nupkg.sha512",
+    "C:\\Users\\hayma\\.nuget\\packages\\microsoft.openapi\\2.0.0\\microsoft.openapi.2.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
