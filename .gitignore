@@ -1,0 +1,60 @@
+# Build results
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# .NET
+*.dll
+*.exe
+*.pdb
+*.cache
+*.nupkg
+
+# User-specific files
+*.rsuser
+*.user
+*.userosscache
+*.suo
+*.cache
+
+# NuGet
+packages/
+*.nuget.props
+*.nuget.targets
+
+# Rider
+.idea/
+*.sln.iml
+
+# Node modules (Angular)
+node_modules/
+
+# Angular
+frontend/invoice-platform/dist/
+frontend/invoice-platform/.angular/
+
+# Docker
+docker/data/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.local
+.env.*.local
+appsettings.Development.json
+appsettings.Local.json
+
+# Test results
+TestResults/
+coverage/
