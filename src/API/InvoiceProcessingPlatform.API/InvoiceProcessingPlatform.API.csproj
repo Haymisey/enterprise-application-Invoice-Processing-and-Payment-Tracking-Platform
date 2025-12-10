@@ -8,10 +8,12 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="8.0.0" />
     <PackageReference Include="MediatR" Version="12.4.1" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="8.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
@@ -19,6 +21,8 @@
     <ProjectReference Include="..\..\Shared\Shared.Infrastructure\Shared.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Modules\InvoiceManagement\InvoiceManagement.Application\InvoiceManagement.Application.csproj" />
     <ProjectReference Include="..\..\Modules\InvoiceManagement\InvoiceManagement.Infrastructure\InvoiceManagement.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\PaymentTracking\PaymentTracking.Application\PaymentTracking.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\PaymentTracking\PaymentTracking.Infrastructure\PaymentTracking.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>
