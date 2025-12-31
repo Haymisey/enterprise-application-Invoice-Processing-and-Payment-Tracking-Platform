@@ -1,0 +1,722 @@
+# Angular Frontend - Implementation Guide
+
+**Assigned To:** Team Member 2  
+**Estimated Time:** 6-8 hours  
+**Priority:** MEDIUM
+
+---
+
+## Overview
+
+You will build the **Angular 21 frontend** for the Invoice Processing Platform with:
+1. Invoice upload & management UI
+2. Payment tracking dashboard
+3. Vendor management interface
+4. Responsive design with Angular Material
+
+---
+
+## Deliverables Checklist
+
+- [ ] Project structure with feature modules
+- [ ] Invoice management components (list, detail, upload)
+- [ ] Payment tracking dashboard
+- [ ] Vendor management UI
+- [ ] Shared components (navbar, sidebar)
+- [ ] API integration services
+- [ ] Routing configuration
+- [ ] Basic E2E tests (optional)
+
+---
+
+## Project Structure
+
+```
+frontend/invoice-platform/src/
+├── app/
+│   ├── core/
+│   │   ├── services/
+│   │   │   ├── api.service.ts
+│   │   │   ├── invoice.service.ts
+│   │   │   ├── payment.service.ts
+│   │   │   └── vendor.service.ts
+│   │   ├── models/
+│   │   │   ├── invoice.model.ts
+│   │   │   ├── payment.model.ts
+│   │   │   └── vendor.model.ts
+│   │   └── interceptors/
+│   │       └── http-error.interceptor.ts
+│   ├── features/
+│   │   ├── invoices/
+│   │   │   ├── invoice-list/
+│   │   │   ├── invoice-detail/
+│   │   │   ├── invoice-upload/
+│   │   │   └── invoices-routing.module.ts
+│   │   ├── payments/
+│   │   │   ├── payment-dashboard/
+│   │   │   ├── payment-list/
+│   │   │   └── payments-routing.module.ts
+│   │   └── vendors/
+│   │       ├── vendor-list/
+│   │       ├── vendor-detail/
+│   │       └── vendors-routing.module.ts
+│   ├── shared/
+│   │   ├── components/
+│   │   │   ├── navbar/
+│   │   │   ├── sidebar/
+│   │   │   └── loading-spinner/
+│   │   └── pipes/
+│   │       └── currency-format.pipe.ts
+│   ├── app.component.ts
+│   ├── app.routes.ts
+│   └── app.config.ts
+└── styles.scss
+```
+
+---
+
+## Step-by-Step Implementation
+
+### Step 1: Project Setup
+
+The Angular project is already scaffolded. Install dependencies:
+
+```bash
+cd frontend/invoice-platform
+npm install @angular/material @angular/cdk
+npm install @angular/common/http
+npm install chart.js ng2-charts
+```
+
+Update `app.config.ts`:
+
+```typescript
+import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { provideRouter } from '@angular/router';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { routes } from './app.routes';
+import { httpErrorInterceptor } from './core/interceptors/http-error.interceptor';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideZoneChangeDetection({ eventCoalescing: true }),
+    provideRouter(routes),
+    provideHttpClient(withInterceptors([httpErrorInterceptor])),
+    provideAnimationsAsync()
+  ]
+};
+```
+
+---
+
+### **Step 2: Core Services** (1.5 hours)
+
+#### 2.1 Create `api.service.ts`
+
+```typescript
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable } from 'rxjs';
+import { environment } from '../../../environments/environment';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class ApiService {
+  private readonly apiUrl = environment.apiUrl;
+
+  constructor(private http: HttpClient) {}
+
+  get<T>(endpoint: string, params?: HttpParams): Observable<T> {
+    return this.http.get<T>(`${this.apiUrl}${endpoint}`, { params });
+  }
+
+  post<T>(endpoint: string, body: any): Observable<T> {
+    return this.http.post<T>(`${this.apiUrl}${endpoint}`, body);
+  }
+
+  put<T>(endpoint: string, body: any): Observable<T> {
+    return this.http.put<T>(`${this.apiUrl}${endpoint}`, body);
+  }
+
+  delete<T>(endpoint: string): Observable<T> {
+    return this.http.delete<T>(`${this.apiUrl}${endpoint}`);
+  }
+}
+```
+
+Create `src/environments/environment.ts`:
+
+```typescript
+export const environment = {
+  production: false,
+  apiUrl: 'http://localhost:5000/api'
+};
+```
+
+#### 2.2 Create `invoice.service.ts`
+
+```typescript
+import { Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
+import { ApiService } from './api.service';
+import { Invoice, CreateInvoiceRequest } from '../models/invoice.model';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class InvoiceService {
+  private readonly endpoint = '/invoices';
+
+  constructor(private api: ApiService) {}
+
+  getInvoices(): Observable<Invoice[]> {
+    return this.api.get<Invoice[]>(this.endpoint);
+  }
+
+  getInvoice(id: string): Observable<Invoice> {
+    return this.api.get<Invoice>(`${this.endpoint}/${id}`);
+  }
+
+  createInvoice(request: CreateInvoiceRequest): Observable<string> {
+    return this.api.post<string>(this.endpoint, request);
+  }
+
+  submitInvoice(id: string): Observable<void> {
+    return this.api.post<void>(`${this.endpoint}/${id}/submit`, {});
+  }
+
+  approveInvoice(id: string, approvedBy: string): Observable<void> {
+    return this.api.post<void>(`${this.endpoint}/${id}/approve`, { approvedBy });
+  }
+}
+```
+
+#### 2.3 Create `invoice.model.ts`
+
+```typescript
+export interface Invoice {
+  id: string;
+  invoiceNumber: string;
+  vendorId: string;
+  status: InvoiceStatus;
+  issueDate: Date;
+  dueDate: Date;
+  subTotal: number;
+  taxAmount: number;
+  totalAmount: number;
+  currency: string;
+  notes?: string;
+  lineItems: InvoiceLineItem[];
+  createdAt: Date;
+  submittedAt?: Date;
+  approvedAt?: Date;
+}
+
+export interface InvoiceLineItem {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+  amount: number;
+}
+
+export enum InvoiceStatus {
+  Draft = 'Draft',
+  PendingApproval = 'PendingApproval',
+  Approved = 'Approved',
+  Rejected = 'Rejected',
+  Paid = 'Paid'
+}
+
+export interface CreateInvoiceRequest {
+  invoiceNumber: string;
+  vendorId: string;
+  issueDate: string;
+  dueDate: string;
+  notes?: string;
+  lineItems: {
+    description: string;
+    quantity: number;
+    unitPrice: number;
+  }[];
+}
+```
+
+---
+
+### **Step 3: Invoice Management UI** (2.5 hours)
+
+#### 3.1 Create `invoice-list.component.ts`
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
+import { MatTableModule } from '@angular/material/table';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatChipsModule } from '@angular/material/chips';
+import { InvoiceService } from '../../../core/services/invoice.service';
+import { Invoice, InvoiceStatus } from '../../../core/models/invoice.model';
+
+@Component({
+  selector: 'app-invoice-list',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatTableModule,
+    MatButtonModule,
+    MatIconModule,
+    MatChipsModule
+  ],
+  templateUrl: './invoice-list.component.html',
+  styleUrls: ['./invoice-list.component.scss']
+})
+export class InvoiceListComponent implements OnInit {
+  invoices: Invoice[] = [];
+  displayedColumns: string[] = ['invoiceNumber', 'vendor', 'amount', 'status', 'dueDate', 'actions'];
+  loading = true;
+
+  constructor(
+    private invoiceService: InvoiceService,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    this.loadInvoices();
+  }
+
+  loadInvoices(): void {
+    this.loading = true;
+    this.invoiceService.getInvoices().subscribe({
+      next: (invoices) => {
+        this.invoices = invoices;
+        this.loading = false;
+      },
+      error: (error) => {
+        console.error('Error loading invoices:', error);
+        this.loading = false;
+      }
+    });
+  }
+
+  viewInvoice(id: string): void {
+    this.router.navigate(['/invoices', id]);
+  }
+
+  getStatusColor(status: InvoiceStatus): string {
+    switch (status) {
+      case InvoiceStatus.Draft: return 'accent';
+      case InvoiceStatus.PendingApproval: return 'primary';
+      case InvoiceStatus.Approved: return 'success';
+      case InvoiceStatus.Rejected: return 'warn';
+      case InvoiceStatus.Paid: return 'success';
+      default: return 'basic';
+    }
+  }
+}
+```
+
+#### 3.2 Create `invoice-list.component.html`
+
+```html
+<div class="invoice-list-container">
+  <div class="header">
+    <h1>Invoices</h1>
+    <button mat-raised-button color="primary" routerLink="/invoices/new">
+      <mat-icon>add</mat-icon>
+      New Invoice
+    </button>
+  </div>
+
+  <div class="table-container" *ngIf="!loading">
+    <table mat-table [dataSource]="invoices" class="mat-elevation-z2">
+      
+      <ng-container matColumnDef="invoiceNumber">
+        <th mat-header-cell *matHeaderCellDef>Invoice #</th>
+        <td mat-cell *matCellDef="let invoice">{{ invoice.invoiceNumber }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="vendor">
+        <th mat-header-cell *matHeaderCellDef>Vendor</th>
+        <td mat-cell *matCellDef="let invoice">{{ invoice.vendorId }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="amount">
+        <th mat-header-cell *matHeaderCellDef>Amount</th>
+        <td mat-cell *matCellDef="let invoice">
+          {{ invoice.totalAmount | currency:invoice.currency }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="status">
+        <th mat-header-cell *matHeaderCellDef>Status</th>
+        <td mat-cell *matCellDef="let invoice">
+          <mat-chip [color]="getStatusColor(invoice.status)">
+            {{ invoice.status }}
+          </mat-chip>
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="dueDate">
+        <th mat-header-cell *matHeaderCellDef>Due Date</th>
+        <td mat-cell *matCellDef="let invoice">{{ invoice.dueDate | date }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="actions">
+        <th mat-header-cell *matHeaderCellDef>Actions</th>
+        <td mat-cell *matCellDef="let invoice">
+          <button mat-icon-button (click)="viewInvoice(invoice.id)">
+            <mat-icon>visibility</mat-icon>
+          </button>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+  </div>
+
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner></mat-spinner>
+  </div>
+</div>
+```
+
+#### 3.3 Create `invoice-list.component.scss`
+
+```scss
+.invoice-list-container {
+  padding: 24px;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    h1 {
+      margin: 0;
+      font-size: 32px;
+      font-weight: 500;
+    }
+  }
+
+  .table-container {
+    overflow-x: auto;
+
+    table {
+      width: 100%;
+    }
+  }
+
+  .loading-container {
+    display: flex;
+    justify-content: center;
+    padding: 48px;
+  }
+}
+```
+
+---
+
+### **Step 4: Payment Dashboard** (1.5 hours)
+
+#### 4.1 Create `payment-dashboard.component.ts`
+
+```typescript
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatCardModule } from '@angular/material/card';
+import { MatGridListModule } from '@angular/material/grid-list';
+import { PaymentService } from '../../../core/services/payment.service';
+import { Payment } from '../../../core/models/payment.model';
+
+@Component({
+  selector: 'app-payment-dashboard',
+  standalone: true,
+  imports: [CommonModule, MatCardModule, MatGridListModule],
+  templateUrl: './payment-dashboard.component.html',
+  styleUrls: ['./payment-dashboard.component.scss']
+})
+export class PaymentDashboardComponent implements OnInit {
+  totalScheduled = 0;
+  totalCompleted = 0;
+  totalOverdue = 0;
+  recentPayments: Payment[] = [];
+
+  constructor(private paymentService: PaymentService) {}
+
+  ngOnInit(): void {
+    this.loadDashboardData();
+  }
+
+  loadDashboardData(): void {
+    // Load payment statistics
+    this.paymentService.getPayments().subscribe({
+      next: (payments) => {
+        this.totalScheduled = payments.filter(p => p.status === 'Scheduled').length;
+        this.totalCompleted = payments.filter(p => p.status === 'Completed').length;
+        this.totalOverdue = payments.filter(p => p.status === 'Overdue').length;
+        this.recentPayments = payments.slice(0, 5);
+      }
+    });
+  }
+}
+```
+
+#### 4.2 Create `payment-dashboard.component.html`
+
+```html
+<div class="dashboard-container">
+  <h1>Payment Dashboard</h1>
+
+  <mat-grid-list cols="3" rowHeight="150px" gutterSize="16px">
+    <mat-grid-tile>
+      <mat-card class="stat-card scheduled">
+        <mat-card-content>
+          <h2>{{ totalScheduled }}</h2>
+          <p>Scheduled Payments</p>
+        </mat-card-content>
+      </mat-card>
+    </mat-grid-tile>
+
+    <mat-grid-tile>
+      <mat-card class="stat-card completed">
+        <mat-card-content>
+          <h2>{{ totalCompleted }}</h2>
+          <p>Completed Payments</p>
+        </mat-card-content>
+      </mat-card>
+    </mat-grid-tile>
+
+    <mat-grid-tile>
+      <mat-card class="stat-card overdue">
+        <mat-card-content>
+          <h2>{{ totalOverdue }}</h2>
+          <p>Overdue Payments</p>
+        </mat-card-content>
+      </mat-card>
+    </mat-grid-tile>
+  </mat-grid-list>
+
+  <mat-card class="recent-payments">
+    <mat-card-header>
+      <mat-card-title>Recent Payments</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <table>
+        <thead>
+          <tr>
+            <th>Invoice</th>
+            <th>Amount</th>
+            <th>Status</th>
+            <th>Scheduled Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let payment of recentPayments">
+            <td>{{ payment.invoiceId }}</td>
+            <td>{{ payment.amount | currency:payment.currency }}</td>
+            <td>{{ payment.status }}</td>
+            <td>{{ payment.scheduledDate | date }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </mat-card-content>
+  </mat-card>
+</div>
+```
+
+---
+
+### **Step 5: Routing Configuration** (30 minutes)
+
+#### 5.1 Update `app.routes.ts`
+
+```typescript
+import { Routes } from '@angular/router';
+
+export const routes: Routes = [
+  { path: '', redirectTo: '/invoices', pathMatch: 'full' },
+  {
+    path: 'invoices',
+    loadChildren: () => import('./features/invoices/invoices-routing.module').then(m => m.InvoicesRoutingModule)
+  },
+  {
+    path: 'payments',
+    loadChildren: () => import('./features/payments/payments-routing.module').then(m => m.PaymentsRoutingModule)
+  },
+  {
+    path: 'vendors',
+    loadChildren: () => import('./features/vendors/vendors-routing.module').then(m => m.VendorsRoutingModule)
+  },
+  { path: '**', redirectTo: '/invoices' }
+];
+```
+
+#### 5.2 Create `invoices-routing.module.ts`
+
+```typescript
+import { NgModule } from '@angular/core';
+import { RouterModule, Routes } from '@angular/router';
+import { InvoiceListComponent } from './invoice-list/invoice-list.component';
+import { InvoiceDetailComponent } from './invoice-detail/invoice-detail.component';
+
+const routes: Routes = [
+  { path: '', component: InvoiceListComponent },
+  { path: ':id', component: InvoiceDetailComponent }
+];
+
+@NgModule({
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
+})
+export class InvoicesRoutingModule { }
+```
+
+---
+
+### **Step 6: Shared Components** (1 hour)
+
+#### 6.1 Create `navbar.component.ts`
+
+```typescript
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+
+@Component({
+  selector: 'app-navbar',
+  standalone: true,
+  imports: [CommonModule, RouterModule, MatToolbarModule, MatButtonModule, MatIconModule],
+  template: `
+    <mat-toolbar color="primary">
+      <span class="logo">Invoice Platform</span>
+      <span class="spacer"></span>
+      <button mat-button routerLink="/invoices">Invoices</button>
+      <button mat-button routerLink="/payments">Payments</button>
+      <button mat-button routerLink="/vendors">Vendors</button>
+    </mat-toolbar>
+  `,
+  styles: [`
+    .spacer {
+      flex: 1 1 auto;
+    }
+    .logo {
+      font-size: 20px;
+      font-weight: 500;
+      margin-right: 24px;
+    }
+  `]
+})
+export class NavbarComponent {}
+```
+
+#### 6.2 Update `app.component.ts`
+
+```typescript
+import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
+import { NavbarComponent } from './shared/components/navbar/navbar.component';
+
+@Component({
+  selector: 'app-root',
+  standalone: true,
+  imports: [RouterOutlet, NavbarComponent],
+  template: `
+    <app-navbar></app-navbar>
+    <main>
+      <router-outlet></router-outlet>
+    </main>
+  `,
+  styles: [`
+    main {
+      min-height: calc(100vh - 64px);
+      background-color: #f5f5f5;
+    }
+  `]
+})
+export class AppComponent {}
+```
+
+---
+
+## Styling Guidelines
+
+Update `styles.scss`:
+
+```scss
+@import '@angular/material/prebuilt-themes/indigo-pink.css';
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background-color: #f5f5f5;
+}
+
+.mat-mdc-card {
+  margin: 16px;
+}
+
+.success {
+  background-color: #4caf50 !important;
+  color: white !important;
+}
+
+.warn {
+  background-color: #f44336 !important;
+  color: white !important;
+}
+```
+
+---
+
+## Testing (Optional)
+
+Create basic E2E test in `e2e/src/app.e2e-spec.ts`:
+
+```typescript
+import { browser, by, element } from 'protractor';
+
+describe('Invoice Platform', () => {
+  it('should display invoice list', async () => {
+    await browser.get('/invoices');
+    expect(await element(by.css('h1')).getText()).toEqual('Invoices');
+  });
+});
+```
+
+---
+
+## Submission Checklist
+
+- [ ] All components compile without errors
+- [ ] API services correctly call backend endpoints
+- [ ] Routing works (navigate between pages)
+- [ ] Material Design components used consistently
+- [ ] Responsive design (works on mobile)
+- [ ] Error handling implemented
+- [ ] Loading states shown
+- [ ] Code follows Angular style guide
+- [ ] README with setup instructions
+
+---
+
+## Common Issues
+
+1. **CORS errors** → Backend must have CORS enabled for `http://localhost:4200`
+2. **API 404 errors** → Check `environment.apiUrl` matches backend
+3. **Material components not working** → Import modules in component
+4. **Routing not working** → Check `app.routes.ts` configuration
+
+---

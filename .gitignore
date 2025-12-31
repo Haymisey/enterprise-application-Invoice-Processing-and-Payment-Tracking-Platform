@@ -29,6 +29,7 @@
 packages/
 *.nuget.props
 *.nuget.targets
+*.nuget.cache
 
 # Rider
 .idea/

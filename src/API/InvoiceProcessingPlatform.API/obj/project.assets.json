@@ -1429,6 +1429,51 @@
         "runtime": {
           "bin/placeholder/Shared.Infrastructure.dll": {}
         }
+      },
+      "VendorManagement.Application/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Shared.Application": "1.0.0",
+          "VendorManagement.Domain": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/VendorManagement.Application.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/VendorManagement.Application.dll": {}
+        }
+      },
+      "VendorManagement.Domain/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Shared.Domain": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/VendorManagement.Domain.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/VendorManagement.Domain.dll": {}
+        }
+      },
+      "VendorManagement.Infrastructure/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore": "10.0.0",
+          "Microsoft.EntityFrameworkCore.SqlServer": "10.0.0",
+          "Shared.Domain": "1.0.0",
+          "Shared.Infrastructure": "1.0.0",
+          "VendorManagement.Application": "1.0.0",
+          "VendorManagement.Domain": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/VendorManagement.Infrastructure.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/VendorManagement.Infrastructure.dll": {}
+        }
       }
     }
   },
@@ -3872,6 +3917,21 @@
       "type": "project",
       "path": "../../Shared/Shared.Infrastructure/Shared.Infrastructure.csproj",
       "msbuildProject": "../../Shared/Shared.Infrastructure/Shared.Infrastructure.csproj"
+    },
+    "VendorManagement.Application/1.0.0": {
+      "type": "project",
+      "path": "../../Modules/VendorManagement/VendorManagement.Application/VendorManagement.Application.csproj",
+      "msbuildProject": "../../Modules/VendorManagement/VendorManagement.Application/VendorManagement.Application.csproj"
+    },
+    "VendorManagement.Domain/1.0.0": {
+      "type": "project",
+      "path": "../../Modules/VendorManagement/VendorManagement.Domain/VendorManagement.Domain.csproj",
+      "msbuildProject": "../../Modules/VendorManagement/VendorManagement.Domain/VendorManagement.Domain.csproj"
+    },
+    "VendorManagement.Infrastructure/1.0.0": {
+      "type": "project",
+      "path": "../../Modules/VendorManagement/VendorManagement.Infrastructure/VendorManagement.Infrastructure.csproj",
+      "msbuildProject": "../../Modules/VendorManagement/VendorManagement.Infrastructure/VendorManagement.Infrastructure.csproj"
     }
   },
   "projectFileDependencyGroups": {
@@ -3885,7 +3945,9 @@
       "PaymentTracking.Application >= 1.0.0",
       "PaymentTracking.Infrastructure >= 1.0.0",
       "Shared.Application >= 1.0.0",
-      "Shared.Infrastructure >= 1.0.0"
+      "Shared.Infrastructure >= 1.0.0",
+      "VendorManagement.Application >= 1.0.0",
+      "VendorManagement.Infrastructure >= 1.0.0"
     ]
   },
   "packageFolders": {
@@ -3894,11 +3956,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "c:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\API\\InvoiceProcessingPlatform.API\\InvoiceProcessingPlatform.API.csproj",
+      "projectUniqueName": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\API\\InvoiceProcessingPlatform.API\\InvoiceProcessingPlatform.API.csproj",
       "projectName": "InvoiceProcessingPlatform.API",
-      "projectPath": "c:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\API\\InvoiceProcessingPlatform.API\\InvoiceProcessingPlatform.API.csproj",
+      "projectPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\API\\InvoiceProcessingPlatform.API\\InvoiceProcessingPlatform.API.csproj",
       "packagesPath": "C:\\Users\\hayma\\.nuget\\packages\\",
-      "outputPath": "c:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\API\\InvoiceProcessingPlatform.API\\obj\\",
+      "outputPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\API\\InvoiceProcessingPlatform.API\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\hayma\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -3916,17 +3978,23 @@
             "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\InvoiceManagement\\InvoiceManagement.Application\\InvoiceManagement.Application.csproj": {
               "projectPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\InvoiceManagement\\InvoiceManagement.Application\\InvoiceManagement.Application.csproj"
             },
-            "c:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\InvoiceManagement\\InvoiceManagement.Infrastructure\\InvoiceManagement.Infrastructure.csproj": {
-              "projectPath": "c:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\InvoiceManagement\\InvoiceManagement.Infrastructure\\InvoiceManagement.Infrastructure.csproj"
+            "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\InvoiceManagement\\InvoiceManagement.Infrastructure\\InvoiceManagement.Infrastructure.csproj": {
+              "projectPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\InvoiceManagement\\InvoiceManagement.Infrastructure\\InvoiceManagement.Infrastructure.csproj"
             },
             "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\PaymentTracking\\PaymentTracking.Application\\PaymentTracking.Application.csproj": {
               "projectPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\PaymentTracking\\PaymentTracking.Application\\PaymentTracking.Application.csproj"
             },
-            "c:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\PaymentTracking\\PaymentTracking.Infrastructure\\PaymentTracking.Infrastructure.csproj": {
-              "projectPath": "c:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\PaymentTracking\\PaymentTracking.Infrastructure\\PaymentTracking.Infrastructure.csproj"
+            "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\PaymentTracking\\PaymentTracking.Infrastructure\\PaymentTracking.Infrastructure.csproj": {
+              "projectPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\PaymentTracking\\PaymentTracking.Infrastructure\\PaymentTracking.Infrastructure.csproj"
             },
-            "c:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Application\\Shared.Application.csproj": {
-              "projectPath": "c:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Application\\Shared.Application.csproj"
+            "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\VendorManagement\\VendorManagement.Application\\VendorManagement.Application.csproj": {
+              "projectPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\VendorManagement\\VendorManagement.Application\\VendorManagement.Application.csproj"
+            },
+            "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\VendorManagement\\VendorManagement.Infrastructure\\VendorManagement.Infrastructure.csproj": {
+              "projectPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\VendorManagement\\VendorManagement.Infrastructure\\VendorManagement.Infrastructure.csproj"
+            },
+            "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Application\\Shared.Application.csproj": {
+              "projectPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Application\\Shared.Application.csproj"
             },
             "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Infrastructure\\Shared.Infrastructure.csproj": {
               "projectPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Infrastructure\\Shared.Infrastructure.csproj"

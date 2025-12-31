@@ -1,0 +1,923 @@
+# Testing & Documentation - Implementation Guide
+
+**Assigned To:** Team Member 3  
+**Estimated Time:** 4-5 hours  
+**Priority:** MEDIUM
+
+---
+
+## Overview
+
+You will create:
+1. **Unit tests** for domain logic (Invoice, Payment, Vendor aggregates)
+2. **Integration tests** for API endpoints
+3. **Technical report**: "From Monolith to Microservice"
+4. **API documentation** (Swagger is already set up)
+
+---
+
+## Deliverables Checklist
+
+- [ ] Unit test project setup
+- [ ] Domain logic unit tests (80%+ coverage)
+- [ ] Integration tests for API endpoints
+- [ ] Technical report (PDF, 10-15 pages)
+- [ ] README documentation
+- [ ] Deployment guide
+
+---
+
+## Part 1: Unit Testing (2-3 hours)
+
+### **Step 1: Create Test Project**
+
+```bash
+cd src
+dotnet new xunit -n Tests
+cd Tests
+dotnet add package FluentAssertions --version 6.12.0
+dotnet add package Moq --version 4.20.70
+dotnet add package Microsoft.EntityFrameworkCore.InMemory --version 10.0.0
+```
+
+Add project references:
+
+```bash
+dotnet add reference ../Modules/InvoiceManagement/InvoiceManagement.Domain/InvoiceManagement.Domain.csproj
+dotnet add reference ../Modules/PaymentTracking/PaymentTracking.Domain/PaymentTracking.Domain.csproj
+dotnet add reference ../Modules/VendorManagement/VendorManagement.Domain/VendorManagement.Domain.csproj
+```
+
+### **Step 2: Invoice Domain Tests**
+
+Create `InvoiceManagement/InvoiceTests.cs`:
+
+```csharp
+using FluentAssertions;
+using InvoiceManagement.Domain.Aggregates;
+using InvoiceManagement.Domain.Events;
+using InvoiceManagement.Domain.ValueObjects;
+
+namespace Tests.InvoiceManagement;
+
+public class InvoiceTests
+{
+    [Fact]
+    public void Create_ShouldCreateInvoiceInDraftStatus()
+    {
+        // Arrange
+        var invoiceNumber = "INV-001";
+        var vendorId = Guid.NewGuid();
+        var issueDate = DateTime.UtcNow;
+        var dueDate = issueDate.AddDays(30);
+
+        // Act
+        var invoice = Invoice.Create(
+            invoiceNumber,
+            vendorId,
+            issueDate,
+            dueDate,
+            "Test invoice",
+            "admin");
+
+        // Assert
+        invoice.Should().NotBeNull();
+        invoice.InvoiceNumber.Should().Be(invoiceNumber);
+        invoice.Status.Should().Be(InvoiceStatus.Draft);
+        invoice.VendorId.Should().Be(vendorId);
+        invoice.DomainEvents.Should().ContainSingle()
+            .Which.Should().BeOfType<InvoiceCreatedEvent>();
+    }
+
+    [Fact]
+    public void AddLineItem_ShouldAddItemAndRecalculateTotals()
+    {
+        // Arrange
+        var invoice = CreateTestInvoice();
+        var description = "Consulting Services";
+        var quantity = 10;
+        var unitPrice = 150.00m;
+
+        // Act
+        invoice.AddLineItem(description, quantity, unitPrice);
+
+        // Assert
+        invoice.LineItems.Should().HaveCount(1);
+        invoice.SubTotal.Amount.Should().Be(1500.00m);
+        invoice.TotalAmount.Amount.Should().BeGreaterThan(1500.00m); // Includes tax
+    }
+
+    [Fact]
+    public void Submit_ShouldChangeStatusToPendingApproval()
+    {
+        // Arrange
+        var invoice = CreateTestInvoice();
+        invoice.AddLineItem("Service", 1, 100);
+
+        // Act
+        invoice.Submit();
+
+        // Assert
+        invoice.Status.Should().Be(InvoiceStatus.PendingApproval);
+        invoice.SubmittedAt.Should().NotBeNull();
+        invoice.DomainEvents.Should().Contain(e => e is InvoiceSubmittedEvent);
+    }
+
+    [Fact]
+    public void Approve_WhenInPendingStatus_ShouldSucceed()
+    {
+        // Arrange
+        var invoice = CreateTestInvoice();
+        invoice.AddLineItem("Service", 1, 100);
+        invoice.Submit();
+
+        // Act
+        invoice.Approve("manager");
+
+        // Assert
+        invoice.Status.Should().Be(InvoiceStatus.Approved);
+        invoice.ApprovedAt.Should().NotBeNull();
+        invoice.ApprovedBy.Should().Be("manager");
+        invoice.DomainEvents.Should().Contain(e => e is InvoiceApprovedEvent);
+    }
+
+    [Fact]
+    public void Approve_WhenNotInPendingStatus_ShouldThrowException()
+    {
+        // Arrange
+        var invoice = CreateTestInvoice(); // Draft status
+
+        // Act & Assert
+        var act = () => invoice.Approve("manager");
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*Draft*");
+    }
+
+    [Fact]
+    public void Submit_WithoutLineItems_ShouldThrowException()
+    {
+        // Arrange
+        var invoice = CreateTestInvoice();
+
+        // Act & Assert
+        var act = () => invoice.Submit();
+        act.Should().Throw<InvalidOperationException>()
+            .WithMessage("*at least one line item*");
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    public void AddLineItem_WithInvalidQuantity_ShouldThrowException(int quantity)
+    {
+        // Arrange
+        var invoice = CreateTestInvoice();
+
+        // Act & Assert
+        var act = () => invoice.AddLineItem("Service", quantity, 100);
+        act.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
+    public void RemoveLineItem_ShouldRecalculateTotals()
+    {
+        // Arrange
+        var invoice = CreateTestInvoice();
+        invoice.AddLineItem("Service 1", 1, 100);
+        invoice.AddLineItem("Service 2", 1, 200);
+        var lineItemId = invoice.LineItems.First().Id;
+
+        // Act
+        invoice.RemoveLineItem(lineItemId);
+
+        // Assert
+        invoice.LineItems.Should().HaveCount(1);
+        invoice.SubTotal.Amount.Should().Be(200.00m);
+    }
+
+    private static Invoice CreateTestInvoice()
+    {
+        return Invoice.Create(
+            "INV-TEST",
+            Guid.NewGuid(),
+            DateTime.UtcNow,
+            DateTime.UtcNow.AddDays(30),
+            "Test",
+            "admin");
+    }
+}
+```
+
+### **Step 3: Payment Domain Tests**
+
+Create `PaymentTracking/PaymentTests.cs`:
+
+```csharp
+using FluentAssertions;
+using PaymentTracking.Domain.Aggregates;
+using PaymentTracking.Domain.Events;
+using PaymentTracking.Domain.ValueObjects;
+
+namespace Tests.PaymentTracking;
+
+public class PaymentTests
+{
+    [Fact]
+    public void Schedule_ShouldCreatePaymentInScheduledStatus()
+    {
+        // Arrange
+        var invoiceId = Guid.NewGuid();
+        var vendorId = Guid.NewGuid();
+        var scheduledDate = DateTime.UtcNow.AddDays(30);
+
+        // Act
+        var payment = Payment.Schedule(
+            invoiceId,
+            vendorId,
+            1000.00m,
+            "USD",
+            scheduledDate,
+            "system");
+
+        // Assert
+        payment.Should().NotBeNull();
+        payment.Status.Should().Be(PaymentStatus.Scheduled);
+        payment.InvoiceId.Should().Be(invoiceId);
+        payment.Amount.Amount.Should().Be(1000.00m);
+        payment.DomainEvents.Should().ContainSingle()
+            .Which.Should().BeOfType<PaymentScheduledEvent>();
+    }
+
+    [Fact]
+    public void Complete_ShouldChangeStatusToCompleted()
+    {
+        // Arrange
+        var payment = CreateTestPayment();
+        var transactionRef = "TXN-12345";
+
+        // Act
+        payment.Complete(transactionRef);
+
+        // Assert
+        payment.Status.Should().Be(PaymentStatus.Completed);
+        payment.TransactionReference.Should().Be(transactionRef);
+        payment.CompletedDate.Should().NotBeNull();
+        payment.DomainEvents.Should().Contain(e => e is PaymentCompletedEvent);
+    }
+
+    [Fact]
+    public void Fail_ShouldChangeStatusToFailed()
+    {
+        // Arrange
+        var payment = CreateTestPayment();
+        var reason = "Insufficient funds";
+
+        // Act
+        payment.Fail(reason);
+
+        // Assert
+        payment.Status.Should().Be(PaymentStatus.Failed);
+        payment.FailureReason.Should().Be(reason);
+        payment.DomainEvents.Should().Contain(e => e is PaymentFailedEvent);
+    }
+
+    [Fact]
+    public void Reschedule_ShouldUpdateScheduledDate()
+    {
+        // Arrange
+        var payment = CreateTestPayment();
+        var newDate = DateTime.UtcNow.AddDays(45);
+
+        // Act
+        payment.Reschedule(newDate);
+
+        // Assert
+        payment.ScheduledDate.Should().Be(newDate);
+        payment.Status.Should().Be(PaymentStatus.Scheduled);
+    }
+
+    [Fact]
+    public void Schedule_WithPastDate_ShouldThrowException()
+    {
+        // Arrange
+        var pastDate = DateTime.UtcNow.AddDays(-1);
+
+        // Act & Assert
+        var act = () => Payment.Schedule(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            1000,
+            "USD",
+            pastDate,
+            "system");
+
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("*cannot be in the past*");
+    }
+
+    private static Payment CreateTestPayment()
+    {
+        return Payment.Schedule(
+            Guid.NewGuid(),
+            Guid.NewGuid(),
+            1000.00m,
+            "USD",
+            DateTime.UtcNow.AddDays(30),
+            "system");
+    }
+}
+```
+
+### **Step 4: Vendor Domain Tests**
+
+Create `VendorManagement/VendorTests.cs`:
+
+```csharp
+using FluentAssertions;
+using VendorManagement.Domain.Aggregates;
+using VendorManagement.Domain.Events;
+using VendorManagement.Domain.ValueObjects;
+
+namespace Tests.VendorManagement;
+
+public class VendorTests
+{
+    [Fact]
+    public void Register_ShouldCreateVendorInPendingStatus()
+    {
+        // Arrange & Act
+        var vendor = Vendor.Register(
+            "Acme Corp",
+            "TAX-123",
+            "contact@acme.com",
+            "+1234567890",
+            "John Doe",
+            "admin");
+
+        // Assert
+        vendor.Should().NotBeNull();
+        vendor.Name.Should().Be("Acme Corp");
+        vendor.Status.Should().Be(VendorStatus.Pending);
+        vendor.DomainEvents.Should().ContainSingle()
+            .Which.Should().BeOfType<VendorRegisteredEvent>();
+    }
+
+    [Fact]
+    public void Activate_ShouldChangeStatusToActive()
+    {
+        // Arrange
+        var vendor = CreateTestVendor();
+
+        // Act
+        vendor.Activate("manager");
+
+        // Assert
+        vendor.Status.Should().Be(VendorStatus.Active);
+        vendor.ActivatedAt.Should().NotBeNull();
+        vendor.ActivatedBy.Should().Be("manager");
+        vendor.DomainEvents.Should().Contain(e => e is VendorActivatedEvent);
+    }
+
+    [Fact]
+    public void Suspend_WhenActive_ShouldSucceed()
+    {
+        // Arrange
+        var vendor = CreateTestVendor();
+        vendor.Activate("manager");
+
+        // Act
+        vendor.Suspend("Compliance issue", "admin");
+
+        // Assert
+        vendor.Status.Should().Be(VendorStatus.Suspended);
+        vendor.Notes.Should().Contain("SUSPENDED");
+        vendor.DomainEvents.Should().Contain(e => e is VendorSuspendedEvent);
+    }
+
+    [Fact]
+    public void UpdateDetails_ShouldUpdateVendorInformation()
+    {
+        // Arrange
+        var vendor = CreateTestVendor();
+        var newName = "Acme Corporation Ltd";
+
+        // Act
+        vendor.UpdateDetails(newName, "new@acme.com", "+9876543210", "Jane Smith", 45);
+
+        // Assert
+        vendor.Name.Should().Be(newName);
+        vendor.Contact.Email.Should().Be("new@acme.com");
+        vendor.PaymentTermDays.Should().Be(45);
+    }
+
+    [Fact]
+    public void Register_WithInvalidEmail_ShouldThrowException()
+    {
+        // Act & Assert
+        var act = () => Vendor.Register(
+            "Test Corp",
+            "TAX-123",
+            "invalid-email",
+            "123",
+            null,
+            "admin");
+
+        act.Should().Throw<ArgumentException>()
+            .WithMessage("*email*");
+    }
+
+    private static Vendor CreateTestVendor()
+    {
+        return Vendor.Register(
+            "Test Vendor",
+            "TAX-TEST",
+            "test@vendor.com",
+            "+1234567890",
+            "Test Contact",
+            "admin");
+    }
+}
+```
+
+### **Step 5: Run Tests**
+
+```bash
+dotnet test --collect:"XPlat Code Coverage"
+```
+
+**Target:** 80%+ code coverage for domain logic
+
+---
+
+## Part 2: Integration Testing (1-2 hours)
+
+### **Step 1: Create Integration Test Project**
+
+```bash
+dotnet new xunit -n IntegrationTests
+cd IntegrationTests
+dotnet add package Microsoft.AspNetCore.Mvc.Testing --version 10.0.0
+dotnet add package Microsoft.EntityFrameworkCore.InMemory --version 10.0.0
+```
+
+### **Step 2: Invoice API Integration Tests**
+
+Create `InvoiceApiTests.cs`:
+
+```csharp
+using System.Net;
+using System.Net.Http.Json;
+using Microsoft.AspNetCore.Mvc.Testing;
+using FluentAssertions;
+
+namespace IntegrationTests;
+
+public class InvoiceApiTests : IClassFixture<WebApplicationFactory<Program>>
+{
+    private readonly HttpClient _client;
+
+    public InvoiceApiTests(WebApplicationFactory<Program> factory)
+    {
+        _client = factory.CreateClient();
+    }
+
+    [Fact]
+    public async Task CreateInvoice_WithValidData_ShouldReturn201()
+    {
+        // Arrange
+        var request = new
+        {
+            invoiceNumber = "INV-INT-001",
+            vendorId = Guid.NewGuid(),
+            issueDate = DateTime.UtcNow.ToString("o"),
+            dueDate = DateTime.UtcNow.AddDays(30).ToString("o"),
+            notes = "Integration test invoice",
+            lineItems = new[]
+            {
+                new { description = "Service", quantity = 1, unitPrice = 100.00 }
+            }
+        };
+
+        // Act
+        var response = await _client.PostAsJsonAsync("/api/invoices", request);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.Created);
+        var invoiceId = await response.Content.ReadAsStringAsync();
+        invoiceId.Should().NotBeNullOrEmpty();
+    }
+
+    [Fact]
+    public async Task GetInvoice_WithValidId_ShouldReturn200()
+    {
+        // Arrange
+        var invoiceId = await CreateTestInvoice();
+
+        // Act
+        var response = await _client.GetAsync($"/api/invoices/{invoiceId}");
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var invoice = await response.Content.ReadFromJsonAsync<dynamic>();
+        invoice.Should().NotBeNull();
+    }
+
+    [Fact]
+    public async Task SubmitInvoice_ShouldReturn200()
+    {
+        // Arrange
+        var invoiceId = await CreateTestInvoice();
+
+        // Act
+        var response = await _client.PostAsync($"/api/invoices/{invoiceId}/submit", null);
+
+        // Assert
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    private async Task<Guid> CreateTestInvoice()
+    {
+        var request = new
+        {
+            invoiceNumber = $"INV-{Guid.NewGuid()}",
+            vendorId = Guid.NewGuid(),
+            issueDate = DateTime.UtcNow.ToString("o"),
+            dueDate = DateTime.UtcNow.AddDays(30).ToString("o"),
+            lineItems = new[] { new { description = "Test", quantity = 1, unitPrice = 100.00 } }
+        };
+
+        var response = await _client.PostAsJsonAsync("/api/invoices", request);
+        var id = await response.Content.ReadAsStringAsync();
+        return Guid.Parse(id.Trim('"'));
+    }
+}
+```
+
+---
+
+## Part 3: Technical Report (2-3 hours)
+
+### **Report Structure**
+
+Create `TechnicalReport.md` (convert to PDF later):
+
+```markdown
+# From Monolith to Microservice: Invoice Processing Platform
+
+**Course:** Enterprise Application Development  
+**Date:** [Your Date]  
+**Team:** [Your Team Name]
+
+---
+
+## Executive Summary
+
+Brief overview of the project, architecture evolution, and key learnings (1 page).
+
+---
+
+## 1. Introduction
+
+### 1.1 Project Overview
+- Business problem
+- Solution approach
+- Technology stack
+
+### 1.2 Objectives
+- Implement DDD principles
+- Build modular monolith
+- Extract microservice
+- Demonstrate event-driven architecture
+
+---
+
+## 2. Architecture Design
+
+### 2.1 Modular Monolith Architecture
+
+```
+[Diagram: Show bounded contexts within monolith]
+
+┌─────────────────────────────────────────┐
+│        Modular Monolith                 │
+├─────────────────────────────────────────┤
+│  ┌──────────────┐  ┌──────────────┐    │
+│  │   Invoice    │  │   Payment    │    │
+│  │  Management  │  │   Tracking   │    │
+│  └──────────────┘  └──────────────┘    │
+│  ┌──────────────┐  ┌──────────────┐    │
+│  │    Vendor    │  │      AI      │    │
+│  │  Management  │  │Classification│    │
+│  └──────────────┘  └──────────────┘    │
+└─────────────────────────────────────────┘
+```
+
+### 2.2 Domain-Driven Design Implementation
+
+**Bounded Contexts:**
+- Invoice Management (Core Domain)
+- Payment Tracking (Supporting)
+- Vendor Management (Supporting)
+- AI Classification (Supporting → Microservice)
+
+**Tactical Patterns Used:**
+- Aggregates: Invoice, Payment, Vendor, InvoiceClassification
+- Value Objects: Money, InvoiceId, PaymentAmount, Address
+- Domain Events: InvoiceApprovedEvent, PaymentScheduledEvent
+- Repositories: IInvoiceRepository, IPaymentRepository
+
+### 2.3 CQRS Pattern
+
+Explain command/query separation with examples.
+
+---
+
+## 3. Technology Stack
+
+| Layer | Technology | Justification |
+|-------|------------|---------------|
+| Backend | .NET 10 | Latest framework, performance |
+| Database | SQL Server | Enterprise-grade RDBMS |
+| ORM | Entity Framework Core | DDD support, migrations |
+| Messaging | RabbitMQ | Reliable event bus |
+| AI | Google Gemini 2.5 Flash | OCR capabilities |
+| Frontend | Angular 21 | Modern SPA framework |
+| Auth | Keycloak | OAuth2/OpenID Connect |
+| Observability | OpenTelemetry + Jaeger | Distributed tracing |
+
+---
+
+## 4. Implementation Details
+
+### 4.1 Invoice Management Module
+
+**Domain Layer:**
+```csharp
+// Show key code snippets
+public sealed class Invoice : AggregateRoot<InvoiceId>
+{
+    // Highlight business logic
+}
+```
+
+**Application Layer:**
+- Commands: CreateInvoice, ApproveInvoice, SubmitInvoice
+- Queries: GetInvoiceById, GetInvoices
+- Handlers: MediatR pattern
+
+**Infrastructure Layer:**
+- EF Core DbContext
+- Repository implementation
+- Database schema
+
+### 4.2 Event-Driven Architecture
+
+**Domain Events:**
+```csharp
+public sealed record InvoiceApprovedEvent(
+    Guid InvoiceId,
+    Guid VendorId,
+    decimal TotalAmount) : DomainEvent;
+```
+
+**Event Handling:**
+- Transactional Outbox Pattern
+- RabbitMQ integration
+- Eventual consistency
+
+### 4.3 AI Classification Integration
+
+**Gemini 2.5 Flash:**
+- OCR invoice extraction
+- Fraud detection
+- Duplicate detection
+
+**Code Example:**
+```csharp
+public async Task<ExtractedInvoiceData> ExtractInvoiceDataAsync(string imageUrl)
+{
+    // Show Gemini integration
+}
+```
+
+---
+
+## 5. Microservice Extraction
+
+### 5.1 Why AI Classification?
+
+- Self-contained functionality
+- Different scaling requirements
+- Technology independence (Python ML models possible)
+- Clear bounded context
+
+### 5.2 Extraction Process
+
+**Before (Monolith):**
+```
+[Show architecture diagram]
+```
+
+**After (Microservice):**
+```
+┌──────────────┐         ┌──────────────┐
+│   Monolith   │ ◄─────► │      AI      │
+│              │  HTTP   │Classification│
+│              │ RabbitMQ│ Microservice │
+└──────────────┘         └──────────────┘
+```
+
+### 5.3 Inter-Service Communication
+
+- REST API calls
+- Event-driven messaging
+- API Gateway pattern
+
+---
+
+## 6. Testing Strategy
+
+### 6.1 Unit Tests
+- Domain logic coverage: 85%
+- Test frameworks: xUnit, FluentAssertions, Moq
+
+### 6.2 Integration Tests
+- API endpoint testing
+- Database integration tests
+
+### 6.3 E2E Tests (Optional)
+- Playwright for frontend
+
+---
+
+## 7. Deployment
+
+### 7.1 Docker Containerization
+
+```yaml
+# Show docker-compose.yml
+```
+
+### 7.2 CI/CD Pipeline
+
+- GitHub Actions
+- Automated testing
+- Container registry
+
+---
+
+## 8. Challenges & Solutions
+
+| Challenge | Solution |
+|-----------|----------|
+| Complex domain logic | DDD tactical patterns |
+| Data consistency | Transactional outbox |
+| Microservice communication | Event-driven architecture |
+| AI integration | Gemini API with retry logic |
+
+---
+
+## 9. Lessons Learned
+
+- DDD benefits for complex domains
+- CQRS improves scalability
+- Event-driven architecture enables loose coupling
+- Microservices add complexity (only extract when needed)
+
+---
+
+## 10. Future Enhancements
+
+- Implement SAGA pattern for distributed transactions
+- Add CQRS read models (separate read database)
+- Implement API Gateway (Ocelot/YARP)
+- Add Kubernetes orchestration
+- Implement Circuit Breaker pattern
+
+---
+
+## 11. Conclusion
+
+Summary of achievements and key takeaways.
+
+---
+
+## Appendices
+
+### A. API Documentation
+- Swagger screenshots
+- Endpoint descriptions
+
+### B. Database Schema
+- ER diagrams
+- Table structures
+
+### C. Code Metrics
+- Lines of code
+- Test coverage
+- Complexity metrics
+
+### D. References
+- DDD books (Eric Evans, Vaughn Vernon)
+- Microsoft .NET documentation
+- RabbitMQ documentation
+```
+
+---
+
+## Part 4: Documentation
+
+### **Create README.md**
+
+```markdown
+# Invoice Processing & Payment Tracking Platform
+
+Enterprise application built with Domain-Driven Design, CQRS, and Event-Driven Architecture.
+
+## Features
+
+- Invoice management with approval workflow
+- Automated payment scheduling
+- Vendor management
+- AI-powered invoice classification (Gemini 2.5 Flash)
+- Event-driven architecture with RabbitMQ
+- Microservice extraction (AI Classification)
+
+## Technology Stack
+
+- Backend: .NET 10, EF Core, MediatR
+- Database: SQL Server
+- Messaging: RabbitMQ
+- AI: Google Gemini 2.5 Flash
+- Frontend: Angular 21
+- Auth: Keycloak
+- Observability: OpenTelemetry + Jaeger
+
+## Getting Started
+
+### Prerequisites
+
+- .NET 10 SDK
+- Docker Desktop
+- Node.js 20+
+- Angular CLI
+
+### Setup
+
+1. Clone repository
+2. Start Docker infrastructure:
+   ```bash
+   cd docker
+   docker-compose up -d
+   ```
+3. Run database migrations:
+   ```bash
+   dotnet ef database update --project src/Modules/InvoiceManagement/InvoiceManagement.Infrastructure
+   ```
+4. Run backend:
+   ```bash
+   dotnet run --project src/API/InvoiceProcessingPlatform.API
+   ```
+5. Run frontend:
+   ```bash
+   cd frontend/invoice-platform
+   npm install
+   ng serve
+   ```
+
+## Testing
+
+```bash
+dotnet test
+```
+
+## Architecture
+
+See [Technical Report](docs/TechnicalReport.pdf) for detailed architecture documentation.
+
+## License
+
+MIT
+```
+
+---
+
+## Submission Checklist
+
+- [ ] Unit tests written (80%+ coverage)
+- [ ] Integration tests for API endpoints
+- [ ] Technical report completed (10-15 pages)
+- [ ] README.md with setup instructions
+- [ ] All tests passing
+- [ ] Code coverage report generated
+- [ ] Technical report converted to PDF
+
+---
+
+## Common Issues
+
+1. **Tests failing** → Check database migrations applied
+2. **Coverage too low** → Add edge case tests
+3. **Integration tests fail** → Ensure API is running
+
+---
