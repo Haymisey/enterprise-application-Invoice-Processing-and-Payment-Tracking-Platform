@@ -1,6 +1,7 @@
 using FluentValidation;
 using InvoiceManagement.Infrastructure;
 using PaymentTracking.Infrastructure;
+using VendorManagement.Infrastructure;
 using MediatR;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +15,7 @@ builder.Services.AddMediatR(cfg =>
 {
     cfg.RegisterServicesFromAssemblyContaining<InvoiceManagement.Application.Commands.CreateInvoice.CreateInvoiceCommand>();
     cfg.RegisterServicesFromAssemblyContaining<PaymentTracking.Application.Commands.SchedulePayment.SchedulePaymentCommand>();
+    cfg.RegisterServicesFromAssemblyContaining<VendorManagement.Application.Commands.RegisterVendor.RegisterVendorCommand>();
 });
 
 // Add FluentValidation
@@ -24,6 +26,9 @@ builder.Services.AddInvoiceManagementInfrastructure(builder.Configuration);
 
 // Add Payment Tracking module
 builder.Services.AddPaymentTrackingInfrastructure(builder.Configuration);
+
+// Add Vendor Management module
+builder.Services.AddVendorManagementInfrastructure(builder.Configuration);
 
 // Add CORS for Angular frontend
 builder.Services.AddCors(options =>

@@ -216,11 +216,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "c:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Application\\Shared.Application.csproj",
+      "projectUniqueName": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Application\\Shared.Application.csproj",
       "projectName": "Shared.Application",
-      "projectPath": "c:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Application\\Shared.Application.csproj",
+      "projectPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Application\\Shared.Application.csproj",
       "packagesPath": "C:\\Users\\hayma\\.nuget\\packages\\",
-      "outputPath": "c:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Application\\obj\\",
+      "outputPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Application\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\hayma\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -235,8 +235,8 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "c:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Domain\\Shared.Domain.csproj": {
-              "projectPath": "c:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Domain\\Shared.Domain.csproj"
+            "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Domain\\Shared.Domain.csproj": {
+              "projectPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Domain\\Shared.Domain.csproj"
             }
           }
         }

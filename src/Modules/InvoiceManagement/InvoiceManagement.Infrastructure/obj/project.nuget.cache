@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "sW3j3k03iFY=",
+  "dgSpecHash": "keC1s7HK7g8=",
   "success": true,
-  "projectFilePath": "c:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\InvoiceManagement\\InvoiceManagement.Infrastructure\\InvoiceManagement.Infrastructure.csproj",
+  "projectFilePath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\InvoiceManagement\\InvoiceManagement.Infrastructure\\InvoiceManagement.Infrastructure.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\hayma\\.nuget\\packages\\azure.core\\1.47.1\\azure.core.1.47.1.nupkg.sha512",
     "C:\\Users\\hayma\\.nuget\\packages\\azure.identity\\1.14.2\\azure.identity.1.14.2.nupkg.sha512",

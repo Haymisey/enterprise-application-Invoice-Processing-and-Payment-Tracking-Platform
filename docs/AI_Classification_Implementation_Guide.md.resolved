@@ -1,0 +1,715 @@
+# AI Classification BC - Implementation Guide
+
+**Assigned To:** Team Member 1  
+**Estimated Time:** 4-6 hours  
+**Priority:** CRITICAL
+
+---
+
+## 📋 Overview
+
+You will implement the **AI Classification Bounded Context** that uses **Google Gemini 2.5 Flash** to:
+1. Extract invoice data from uploaded images (OCR)
+2. Detect duplicate invoices
+3. Flag potentially fraudulent invoices
+
+This module will later be extracted as a **microservice** (Phase 5).
+
+---
+
+## 🎯 Deliverables Checklist
+
+- [ ] Domain Layer (Entities, Value Objects, Events)
+- [ ] Application Layer (Commands, Queries, Handlers)
+- [ ] Infrastructure Layer (Gemini API integration, Repository)
+- [ ] API Controller with endpoints
+- [ ] Unit tests for domain logic
+- [ ] README with setup instructions
+
+---
+
+## Project Structure
+
+Follow this **EXACT** structure to match our existing pattern:
+
+```
+src/Services/AIClassification/
+├── AIClassification.Domain/
+│   ├── Aggregates/
+│   │   └── InvoiceClassification.cs
+│   ├── ValueObjects/
+│   │   ├── ClassificationId.cs
+│   │   ├── ClassificationStatus.cs
+│   │   ├── ExtractedInvoiceData.cs
+│   │   └── ConfidenceScore.cs
+│   ├── Events/
+│   │   └── ClassificationEvents.cs
+│   └── Repositories/
+│       └── IClassificationRepository.cs
+├── AIClassification.Application/
+│   ├── Commands/
+│   │   ├── ClassifyInvoice/
+│   │   │   ├── ClassifyInvoiceCommand.cs
+│   │   │   └── ClassifyInvoiceCommandHandler.cs
+│   │   └── ClassificationErrors.cs
+│   ├── Queries/
+│   │   ├── GetClassification/
+│   │   │   ├── GetClassificationQuery.cs
+│   │   │   └── GetClassificationQueryHandler.cs
+│   │   └── ClassificationDtos.cs
+│   └── Services/
+│       └── IGeminiService.cs
+├── AIClassification.Infrastructure/
+│   ├── Persistence/
+│   │   ├── ClassificationDbContext.cs
+│   │   ├── Configurations/
+│   │   │   └── ClassificationConfiguration.cs
+│   │   └── Repositories/
+│   │       └── ClassificationRepository.cs
+│   ├── AI/
+│   │   └── GeminiService.cs
+│   └── DependencyInjection.cs
+└── AIClassification.API/
+    └── Controllers/
+        └── ClassificationsController.cs
+```
+
+---
+
+## Step-by-Step Implementation
+
+### **Step 1: Domain Layer** (1 hour)
+
+#### 1.1 Create `ClassificationId.cs`
+
+```csharp
+using Shared.Domain.Primitives;
+
+namespace AIClassification.Domain.ValueObjects;
+
+public sealed class ClassificationId : ValueObject
+{
+    public Guid Value { get; }
+
+    private ClassificationId(Guid value) => Value = value;
+
+    public static ClassificationId Create() => new(Guid.NewGuid());
+    public static ClassificationId Create(Guid value) => new(value);
+
+    protected override IEnumerable<object> GetEqualityComponents()
+    {
+        yield return Value;
+    }
+
+    public static implicit operator Guid(ClassificationId id) => id.Value;
+}
+```
+
+#### 1.2 Create `ClassificationStatus.cs`
+
+```csharp
+namespace AIClassification.Domain.ValueObjects;
+
+public enum ClassificationStatus
+{
+    Pending = 0,
+    Processing = 1,
+    Completed = 2,
+    Failed = 3,
+    FraudDetected = 4,
+    DuplicateDetected = 5
+}
+```
+
+#### 1.3 Create `ExtractedInvoiceData.cs`
+
+```csharp
+using Shared.Domain.Primitives;
+
+namespace AIClassification.Domain.ValueObjects;
+
+public sealed class ExtractedInvoiceData : ValueObject
+{
+    public string? InvoiceNumber { get; }
+    public string? VendorName { get; }
+    public decimal? TotalAmount { get; }
+    public string? Currency { get; }
+    public DateTime? IssueDate { get; }
+    public DateTime? DueDate { get; }
+    public List<string> LineItems { get; }
+
+    private ExtractedInvoiceData(
+        string? invoiceNumber,
+        string? vendorName,
+        decimal? totalAmount,
+        string? currency,
+        DateTime? issueDate,
+        DateTime? dueDate,
+        List<string> lineItems)
+    {
+        InvoiceNumber = invoiceNumber;
+        VendorName = vendorName;
+        TotalAmount = totalAmount;
+        Currency = currency;
+        IssueDate = issueDate;
+        DueDate = dueDate;
+        LineItems = lineItems ?? new List<string>();
+    }
+
+    public static ExtractedInvoiceData Create(
+        string? invoiceNumber,
+        string? vendorName,
+        decimal? totalAmount,
+        string? currency,
+        DateTime? issueDate,
+        DateTime? dueDate,
+        List<string>? lineItems = null)
+    {
+        return new ExtractedInvoiceData(
+            invoiceNumber,
+            vendorName,
+            totalAmount,
+            currency,
+            issueDate,
+            dueDate,
+            lineItems ?? new List<string>());
+    }
+
+    protected override IEnumerable<object> GetEqualityComponents()
+    {
+        yield return InvoiceNumber ?? string.Empty;
+        yield return VendorName ?? string.Empty;
+        yield return TotalAmount ?? 0;
+    }
+}
+```
+
+#### 1.4 Create `InvoiceClassification.cs` (Aggregate Root)
+
+```csharp
+using Shared.Domain.Primitives;
+using AIClassification.Domain.Events;
+using AIClassification.Domain.ValueObjects;
+
+namespace AIClassification.Domain.Aggregates;
+
+public sealed class InvoiceClassification : AggregateRoot<ClassificationId>
+{
+    public string ImageUrl { get; private set; }
+    public ClassificationStatus Status { get; private set; }
+    public ExtractedInvoiceData? ExtractedData { get; private set; }
+    public double ConfidenceScore { get; private set; }
+    public bool IsDuplicate { get; private set; }
+    public bool IsFraudulent { get; private set; }
+    public string? FraudReason { get; private set; }
+    public string? ErrorMessage { get; private set; }
+    public DateTime CreatedAt { get; private set; }
+    public DateTime? CompletedAt { get; private set; }
+
+    private InvoiceClassification(ClassificationId id, string imageUrl) : base(id)
+    {
+        ImageUrl = imageUrl;
+        Status = ClassificationStatus.Pending;
+        CreatedAt = DateTime.UtcNow;
+    }
+
+    private InvoiceClassification() : base() 
+    { 
+        ImageUrl = string.Empty;
+    }
+
+    public static InvoiceClassification Create(string imageUrl)
+    {
+        if (string.IsNullOrWhiteSpace(imageUrl))
+            throw new ArgumentException("Image URL is required", nameof(imageUrl));
+
+        var classification = new InvoiceClassification(ClassificationId.Create(), imageUrl);
+        
+        classification.RaiseDomainEvent(new ClassificationStartedEvent(
+            classification.Id.Value,
+            imageUrl));
+
+        return classification;
+    }
+
+    public void MarkAsProcessing()
+    {
+        Status = ClassificationStatus.Processing;
+    }
+
+    public void Complete(
+        ExtractedInvoiceData extractedData,
+        double confidenceScore,
+        bool isDuplicate,
+        bool isFraudulent,
+        string? fraudReason = null)
+    {
+        ExtractedData = extractedData;
+        ConfidenceScore = confidenceScore;
+        IsDuplicate = isDuplicate;
+        IsFraudulent = isFraudulent;
+        FraudReason = fraudReason;
+        CompletedAt = DateTime.UtcNow;
+
+        if (isFraudulent)
+        {
+            Status = ClassificationStatus.FraudDetected;
+            RaiseDomainEvent(new FraudDetectedEvent(Id.Value, fraudReason ?? "Unknown"));
+        }
+        else if (isDuplicate)
+        {
+            Status = ClassificationStatus.DuplicateDetected;
+            RaiseDomainEvent(new DuplicateDetectedEvent(Id.Value, extractedData.InvoiceNumber ?? "Unknown"));
+        }
+        else
+        {
+            Status = ClassificationStatus.Completed;
+            RaiseDomainEvent(new ClassificationCompletedEvent(
+                Id.Value,
+                extractedData.InvoiceNumber,
+                extractedData.VendorName,
+                extractedData.TotalAmount,
+                confidenceScore));
+        }
+    }
+
+    public void Fail(string errorMessage)
+    {
+        Status = ClassificationStatus.Failed;
+        ErrorMessage = errorMessage;
+        CompletedAt = DateTime.UtcNow;
+
+        RaiseDomainEvent(new ClassificationFailedEvent(Id.Value, errorMessage));
+    }
+}
+```
+
+#### 1.5 Create `ClassificationEvents.cs`
+
+```csharp
+using Shared.Domain.Primitives;
+
+namespace AIClassification.Domain.Events;
+
+public sealed record ClassificationStartedEvent(
+    Guid ClassificationId,
+    string ImageUrl) : DomainEvent;
+
+public sealed record ClassificationCompletedEvent(
+    Guid ClassificationId,
+    string? InvoiceNumber,
+    string? VendorName,
+    decimal? TotalAmount,
+    double ConfidenceScore) : DomainEvent;
+
+public sealed record FraudDetectedEvent(
+    Guid ClassificationId,
+    string Reason) : DomainEvent;
+
+public sealed record DuplicateDetectedEvent(
+    Guid ClassificationId,
+    string InvoiceNumber) : DomainEvent;
+
+public sealed record ClassificationFailedEvent(
+    Guid ClassificationId,
+    string ErrorMessage) : DomainEvent;
+```
+
+---
+
+### **Step 2: Application Layer** (1.5 hours)
+
+#### 2.1 Create `IGeminiService.cs`
+
+```csharp
+using AIClassification.Domain.ValueObjects;
+
+namespace AIClassification.Application.Services;
+
+public interface IGeminiService
+{
+    Task<(ExtractedInvoiceData data, double confidence)> ExtractInvoiceDataAsync(
+        string imageUrl, 
+        CancellationToken cancellationToken = default);
+    
+    Task<(bool isFraudulent, string? reason)> DetectFraudAsync(
+        ExtractedInvoiceData data, 
+        CancellationToken cancellationToken = default);
+}
+```
+
+#### 2.2 Create `ClassifyInvoiceCommand.cs`
+
+```csharp
+using Shared.Application.Messaging;
+
+namespace AIClassification.Application.Commands.ClassifyInvoice;
+
+public sealed record ClassifyInvoiceCommand(string ImageUrl) : ICommand<Guid>;
+```
+
+#### 2.3 Create `ClassifyInvoiceCommandHandler.cs`
+
+```csharp
+using AIClassification.Domain.Aggregates;
+using AIClassification.Domain.Repositories;
+using AIClassification.Application.Services;
+using Shared.Application.Messaging;
+using Shared.Domain.Primitives;
+using Shared.Domain.Results;
+
+namespace AIClassification.Application.Commands.ClassifyInvoice;
+
+internal sealed class ClassifyInvoiceCommandHandler : ICommandHandler<ClassifyInvoiceCommand, Guid>
+{
+    private readonly IClassificationRepository _repository;
+    private readonly IGeminiService _geminiService;
+    private readonly IUnitOfWork _unitOfWork;
+
+    public ClassifyInvoiceCommandHandler(
+        IClassificationRepository repository,
+        IGeminiService geminiService,
+        IUnitOfWork unitOfWork)
+    {
+        _repository = repository;
+        _geminiService = geminiService;
+        _unitOfWork = unitOfWork;
+    }
+
+    public async Task<Result<Guid>> Handle(ClassifyInvoiceCommand request, CancellationToken cancellationToken)
+    {
+        var classification = InvoiceClassification.Create(request.ImageUrl);
+        await _repository.AddAsync(classification, cancellationToken);
+        await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        // Start async processing (in real app, use background job)
+        _ = Task.Run(async () => await ProcessClassificationAsync(classification.Id.Value), cancellationToken);
+
+        return Result.Success(classification.Id.Value);
+    }
+
+    private async Task ProcessClassificationAsync(Guid classificationId)
+    {
+        var classification = await _repository.GetByIdAsync(
+            AIClassification.Domain.ValueObjects.ClassificationId.Create(classificationId));
+
+        if (classification is null) return;
+
+        try
+        {
+            classification.MarkAsProcessing();
+            await _unitOfWork.SaveChangesAsync();
+
+            // Extract data using Gemini
+            var (extractedData, confidence) = await _geminiService.ExtractInvoiceDataAsync(classification.ImageUrl);
+
+            // Check for duplicates (simplified - check if invoice number exists)
+            var isDuplicate = extractedData.InvoiceNumber != null && 
+                await _repository.ExistsWithInvoiceNumberAsync(extractedData.InvoiceNumber);
+
+            // Detect fraud
+            var (isFraudulent, fraudReason) = await _geminiService.DetectFraudAsync(extractedData);
+
+            classification.Complete(extractedData, confidence, isDuplicate, isFraudulent, fraudReason);
+        }
+        catch (Exception ex)
+        {
+            classification.Fail(ex.Message);
+        }
+
+        _repository.Update(classification);
+        await _unitOfWork.SaveChangesAsync();
+    }
+}
+```
+
+---
+
+### **Step 3: Infrastructure Layer** (2 hours)
+
+#### 3.1 Create `GeminiService.cs`
+
+> [!IMPORTANT]
+> You'll need to install the Google Generative AI NuGet package:
+> ```bash
+> dotnet add package Google.Generative.AI --version 1.0.0
+> ```
+
+```csharp
+using AIClassification.Application.Services;
+using AIClassification.Domain.ValueObjects;
+using Google.Generative.AI;
+using Microsoft.Extensions.Configuration;
+using System.Text.Json;
+
+namespace AIClassification.Infrastructure.AI;
+
+public sealed class GeminiService : IGeminiService
+{
+    private readonly string _apiKey;
+    private readonly GenerativeModel _model;
+
+    public GeminiService(IConfiguration configuration)
+    {
+        _apiKey = configuration["Gemini:ApiKey"] 
+            ?? throw new InvalidOperationException("Gemini API key not configured");
+        
+        _model = new GenerativeModel(_apiKey, "gemini-2.0-flash-exp");
+    }
+
+    public async Task<(ExtractedInvoiceData data, double confidence)> ExtractInvoiceDataAsync(
+        string imageUrl, 
+        CancellationToken cancellationToken = default)
+    {
+        var prompt = @"
+Extract the following information from this invoice image and return ONLY valid JSON:
+{
+  ""invoiceNumber"": ""string or null"",
+  ""vendorName"": ""string or null"",
+  ""totalAmount"": number or null,
+  ""currency"": ""string or null"",
+  ""issueDate"": ""YYYY-MM-DD or null"",
+  ""dueDate"": ""YYYY-MM-DD or null"",
+  ""lineItems"": [""string""],
+  ""confidence"": 0.0 to 1.0
+}
+
+Rules:
+- Return ONLY the JSON object, no markdown, no explanation
+- Use null for missing fields
+- confidence should reflect how certain you are about the extraction
+";
+
+        try
+        {
+            var response = await _model.GenerateContentAsync(prompt, imageUrl);
+            var jsonResponse = response.Text.Trim().Replace("```json", "").Replace("```", "").Trim();
+            
+            var result = JsonSerializer.Deserialize<GeminiInvoiceResponse>(jsonResponse, 
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            if (result is null)
+                throw new InvalidOperationException("Failed to parse Gemini response");
+
+            var extractedData = ExtractedInvoiceData.Create(
+                result.InvoiceNumber,
+                result.VendorName,
+                result.TotalAmount,
+                result.Currency,
+                result.IssueDate,
+                result.DueDate,
+                result.LineItems);
+
+            return (extractedData, result.Confidence);
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException($"Gemini extraction failed: {ex.Message}", ex);
+        }
+    }
+
+    public async Task<(bool isFraudulent, string? reason)> DetectFraudAsync(
+        ExtractedInvoiceData data, 
+        CancellationToken cancellationToken = default)
+    {
+        var prompt = $@"
+Analyze this invoice data for potential fraud indicators. Return ONLY valid JSON:
+{{
+  ""isFraudulent"": true or false,
+  ""reason"": ""string or null""
+}}
+
+Invoice Data:
+- Invoice Number: {data.InvoiceNumber ?? "N/A"}
+- Vendor: {data.VendorName ?? "N/A"}
+- Amount: {data.TotalAmount?.ToString() ?? "N/A"} {data.Currency ?? ""}
+- Issue Date: {data.IssueDate?.ToString("yyyy-MM-dd") ?? "N/A"}
+- Due Date: {data.DueDate?.ToString("yyyy-MM-dd") ?? "N/A"}
+
+Check for:
+1. Unusual amounts (too high or suspiciously round numbers)
+2. Invalid dates (due date before issue date)
+3. Missing critical information
+4. Suspicious vendor names
+";
+
+        try
+        {
+            var response = await _model.GenerateContentAsync(prompt);
+            var jsonResponse = response.Text.Trim().Replace("```json", "").Replace("```", "").Trim();
+            
+            var result = JsonSerializer.Deserialize<GeminiFraudResponse>(jsonResponse,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+            return (result?.IsFraudulent ?? false, result?.Reason);
+        }
+        catch
+        {
+            return (false, null); // Default to not fraudulent on error
+        }
+    }
+
+    private record GeminiInvoiceResponse(
+        string? InvoiceNumber,
+        string? VendorName,
+        decimal? TotalAmount,
+        string? Currency,
+        DateTime? IssueDate,
+        DateTime? DueDate,
+        List<string>? LineItems,
+        double Confidence);
+
+    private record GeminiFraudResponse(
+        bool IsFraudulent,
+        string? Reason);
+}
+```
+
+#### 3.2 Update [appsettings.json](file:///c:/Users/hayma/OneDrive/Desktop/EAD-Lab/enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform/src/API/InvoiceProcessingPlatform.API/appsettings.json) in API project
+
+```json
+{
+  "Gemini": {
+    "ApiKey": "YOUR_GEMINI_API_KEY_HERE"
+  }
+}
+```
+
+> [!CAUTION]
+> **NEVER commit your API key to Git!** Add it to [.gitignore](file:///c:/Users/hayma/OneDrive/Desktop/EAD-Lab/enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform/.gitignore) or use environment variables.
+
+---
+
+### **Step 4: API Controller** (30 minutes)
+
+#### 4.1 Create `ClassificationsController.cs`
+
+```csharp
+using AIClassification.Application.Commands.ClassifyInvoice;
+using AIClassification.Application.Queries.GetClassification;
+using MediatR;
+using Microsoft.AspNetCore.Mvc;
+
+namespace AIClassification.API.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class ClassificationsController : ControllerBase
+{
+    private readonly ISender _sender;
+
+    public ClassificationsController(ISender sender)
+    {
+        _sender = sender;
+    }
+
+    [HttpPost]
+    [ProducesResponseType(typeof(Guid), StatusCodes.Status202Accepted)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Classify([FromBody] ClassifyRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _sender.Send(new ClassifyInvoiceCommand(request.ImageUrl), cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return BadRequest(new { error = result.Error.Description });
+        }
+
+        return AcceptedAtAction(nameof(GetById), new { id = result.Value }, result.Value);
+    }
+
+    [HttpGet("{id:guid}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetById(Guid id, CancellationToken cancellationToken)
+    {
+        var classification = await _sender.Send(new GetClassificationQuery(id), cancellationToken);
+        
+        if (classification is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(classification);
+    }
+}
+
+public record ClassifyRequest(string ImageUrl);
+```
+
+---
+
+## Testing Requirements
+
+Create unit tests in `AIClassification.Tests` project:
+
+```csharp
+public class InvoiceClassificationTests
+{
+    [Fact]
+    public void Create_ShouldRaiseDomainEvent()
+    {
+        // Arrange & Act
+        var classification = InvoiceClassification.Create("https://example.com/invoice.jpg");
+
+        // Assert
+        classification.DomainEvents.Should().ContainSingle()
+            .Which.Should().BeOfType<ClassificationStartedEvent>();
+    }
+
+    [Fact]
+    public void Complete_WithFraud_ShouldSetStatusToFraudDetected()
+    {
+        // Arrange
+        var classification = InvoiceClassification.Create("https://example.com/invoice.jpg");
+        var data = ExtractedInvoiceData.Create("INV-001", "Vendor", 1000, "USD", DateTime.Now, DateTime.Now.AddDays(30));
+
+        // Act
+        classification.Complete(data, 0.95, false, true, "Suspicious amount");
+
+        // Assert
+        classification.Status.Should().Be(ClassificationStatus.FraudDetected);
+        classification.IsFraudulent.Should().BeTrue();
+    }
+}
+```
+
+---
+
+## Getting Your Gemini API Key
+
+1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey)
+2. Click "Create API Key"
+3. Copy the key
+4. Add to [appsettings.json](file:///c:/Users/hayma/OneDrive/Desktop/EAD-Lab/enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform/src/API/InvoiceProcessingPlatform.API/appsettings.json) (or use environment variable)
+
+---
+
+## Submission Checklist
+
+Before submitting your code:
+
+- [ ] All files follow the exact folder structure above
+- [ ] Code compiles without errors (`dotnet build`)
+- [ ] Domain events are raised correctly
+- [ ] Gemini integration works (test with sample image)
+- [ ] Unit tests pass
+- [ ] README.md with setup instructions included
+- [ ] No API keys committed to Git
+- [ ] Code follows DDD patterns (Aggregate, Value Objects, Events)
+- [ ] CQRS pattern used (Commands/Queries separated)
+
+---
+
+## Need Help?
+
+**Common Issues:**
+
+1. **Gemini API errors** → Check API key, check quota
+2. **JSON parsing fails** → Gemini might return markdown, strip it
+3. **Build errors** → Make sure all project references are correct
+4. **Domain events not firing** → Check [RaiseDomainEvent()](file:///c:/Users/hayma/OneDrive/Desktop/EAD-Lab/enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform/src/Shared/Shared.Domain/Primitives/AggregateRoot.cs#23-30) calls
+
+**Questions?** Ask in the team chat or review existing modules (Invoice, Payment, Vendor) for reference patterns.
+
+---
