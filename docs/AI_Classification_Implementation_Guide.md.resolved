@@ -6,7 +6,7 @@
 
 ---
 
-## 📋 Overview
+## Overview
 
 You will implement the **AI Classification Bounded Context** that uses **Google Gemini 2.5 Flash** to:
 1. Extract invoice data from uploaded images (OCR)
@@ -17,7 +17,7 @@ This module will later be extracted as a **microservice** (Phase 5).
 
 ---
 
-## 🎯 Deliverables Checklist
+## Deliverables Checklist
 
 - [ ] Domain Layer (Entities, Value Objects, Events)
 - [ ] Application Layer (Commands, Queries, Handlers)

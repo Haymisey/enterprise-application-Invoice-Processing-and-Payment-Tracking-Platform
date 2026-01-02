@@ -4,6 +4,7 @@ using InvoiceManagement.Application.Commands.SubmitInvoice;
 using InvoiceManagement.Application.Queries;
 using InvoiceManagement.Application.Queries.GetInvoiceById;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InvoiceProcessingPlatform.API.Controllers;
@@ -91,8 +92,11 @@ public class InvoicesController : ControllerBase
     /// Approve an invoice for payment.
     /// </summary>
     [HttpPost("{id:guid}/approve")]
+    [Authorize(Roles = "admin,manager")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Approve(Guid id, [FromBody] ApproveInvoiceRequest request, CancellationToken cancellationToken)
     {
