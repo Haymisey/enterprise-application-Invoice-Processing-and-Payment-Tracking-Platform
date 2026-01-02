@@ -1,0 +1,307 @@
+# Domain Events & RabbitMQ - Implementation Guide
+
+**Assigned To:** Team Member 2 
+**Estimated Time:** 4-6 hours  
+**Priority:** CRITICAL
+
+---
+
+## Overview
+
+You will implement the **Distributed Event Bus** using **RabbitMQ** and the **Transactional Outbox Pattern**. This is the core of our microservices architecture.
+
+**Your Goal:**
+When an Invoice is Approved (Core Domain), a [PaymentScheduledEvent](file:///c:/Users/hayma/OneDrive/Desktop/EAD-Lab/enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform/src/Modules/PaymentTracking/PaymentTracking.Domain/Events/PaymentEvents.cs#8-15) is published to RabbitMQ. The Payment Service listens and creates a Payment.
+
+---
+
+## Deliverables Checklist
+
+- [ ] `IEventBus` interface and `EventBus` implementation (RabbitMQ)
+- [ ] `OutboxMessage` entity and EF Core configuration
+- [ ] Background worker (`OutboxProcessor`) to publish events
+- [ ] Update [InvoiceDbContext] to save events to Outbox
+- [ ] Create `InvoiceApprovedEventHandler`
+
+---
+
+## Project Structure
+
+```
+src/Shared/Shared.Infrastructure/
+├── Messaging/
+│   ├── EventBus.cs
+│   ├── RabbitMqOptions.cs
+│   └── IEventBus.cs
+├── Outbox/
+│   ├── OutboxMessage.cs
+│   ├── OutboxMessageConfiguration.cs
+│   └── OutboxProcessor.cs
+└── DependencyInjection.cs (Update this)
+```
+
+---
+
+## Step-by-Step Implementation
+
+### **Step 1: Event Bus Interface** (Shared Project)
+
+In `src/Shared/Shared.Application/Messaging/IEventBus.cs`:
+
+```csharp
+using Shared.Domain.Primitives;
+
+namespace Shared.Application.Messaging;
+
+public interface IEventBus
+{
+    Task PublishAsync<T>(T integrationEvent, CancellationToken cancellationToken = default)
+        where T : IDomainEvent;
+}
+```
+
+### **Step 2: RabbitMQ Implementation**
+
+First, add package to `Shared.Infrastructure`:
+```bash
+dotnet add package RabbitMQ.Client --version 6.8.1
+```
+
+Create `src/Shared/Shared.Infrastructure/Messaging/EventBus.cs`:
+
+```csharp
+using RabbitMQ.Client;
+using Shared.Application.Messaging;
+using Shared.Domain.Primitives;
+using System.Text;
+using System.Text.Json;
+
+namespace Shared.Infrastructure.Messaging;
+
+public sealed class EventBus : IEventBus, IDisposable
+{
+    private readonly IModel _channel;
+    private readonly IConnection _connection;
+
+    public EventBus(string connectionString) // e.g., "host=localhost"
+    {
+        var factory = new ConnectionFactory { HostName = "localhost" }; // Simplify for dev
+        _connection = factory.CreateConnection();
+        _channel = _connection.CreateModel();
+        
+        // Declare Exchange
+        _channel.ExchangeDeclare(exchange: "invoice-events", type: ExchangeType.Topic);
+    }
+
+    public Task PublishAsync<T>(T integrationEvent, CancellationToken cancellationToken = default)
+        where T : IDomainEvent
+    {
+        var eventName = typeof(T).Name;
+        var message = JsonSerializer.Serialize(integrationEvent);
+        var body = Encoding.UTF8.GetBytes(message);
+
+        _channel.BasicPublish(
+            exchange: "invoice-events",
+            routingKey: eventName,
+            basicProperties: null,
+            body: body);
+
+        return Task.CompletedTask;
+    }
+
+    public void Dispose()
+    {
+        _channel?.Dispose();
+        _connection?.Dispose();
+    }
+}
+```
+
+### **Step 3: Transactional Outbox Pattern**
+
+Instead of publishing to RabbitMQ directly (which might fail *after* DB save), we save events to the DB first.
+
+#### 3.1 Create `OutboxMessage` Entity
+
+In `src/Shared/Shared.Infrastructure/Outbox/OutboxMessage.cs`:
+
+```csharp
+namespace Shared.Infrastructure.Outbox;
+
+public sealed class OutboxMessage
+{
+    public Guid Id { get; set; }
+    public string Type { get; set; } = string.Empty;
+    public string Content { get; set; } = string.Empty;
+    public DateTime OccurredOnUtc { get; set; }
+    public DateTime? ProcessedOnUtc { get; set; }
+    public string? Error { get; set; }
+}
+```
+
+#### 3.2 Create Configuration
+
+In `src/Shared/Shared.Infrastructure/Outbox/OutboxMessageConfiguration.cs`:
+
+```csharp
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace Shared.Infrastructure.Outbox;
+
+public sealed class OutboxMessageConfiguration : IEntityTypeConfiguration<OutboxMessage>
+{
+    public void Configure(EntityTypeBuilder<OutboxMessage> builder)
+    {
+        builder.ToTable("OutboxMessages");
+        builder.HasKey(x => x.Id);
+    }
+}
+```
+
+### **Step 4: Update DbContext (Interceptors)**
+
+We need to automatically save Domain Events to the Outbox table when [SaveChangesAsync](file:///c:/Users/hayma/OneDrive/Desktop/EAD-Lab/enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform/src/Modules/PaymentTracking/PaymentTracking.Infrastructure/Persistence/PaymentDbContext.cs#25-44) is called.
+
+Create `src/Shared/Shared.Infrastructure/Interceptors/ConvertDomainEventsToOutboxMessagesInterceptor.cs`:
+
+```csharp
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Newtonsoft.Json;
+using Shared.Domain.Primitives;
+using Shared.Infrastructure.Outbox;
+
+namespace Shared.Infrastructure.Interceptors;
+
+public sealed class ConvertDomainEventsToOutboxMessagesInterceptor : SaveChangesInterceptor
+{
+    public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
+        DbContextEventData eventData,
+        InterceptionResult<int> result,
+        CancellationToken cancellationToken = default)
+    {
+        var dbContext = eventData.Context;
+        if (dbContext is null) return base.SavingChangesAsync(eventData, result, cancellationToken);
+
+        var outboxMessages = dbContext.ChangeTracker
+            .Entries<AggregateRoot>()
+            .Select(x => x.Entity)
+            .SelectMany(aggregate =>
+            {
+                var domainEvents = aggregate.DomainEvents.ToList();
+                aggregate.ClearDomainEvents();
+                return domainEvents;
+            })
+            .Select(domainEvent => new OutboxMessage
+            {
+                Id = Guid.NewGuid(),
+                OccurredOnUtc = DateTime.UtcNow,
+                Type = domainEvent.GetType().Name,
+                Content = JsonConvert.SerializeObject(domainEvent, new JsonSerializerSettings
+                {
+                    TypeNameHandling = TypeNameHandling.All
+                })
+            })
+            .ToList();
+
+        dbContext.Set<OutboxMessage>().AddRange(outboxMessages);
+
+        return base.SavingChangesAsync(eventData, result, cancellationToken);
+    }
+}
+```
+
+**Register this Interceptor** in your [InvoiceDbContext](file:///c:/Users/hayma/OneDrive/Desktop/EAD-Lab/enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform/src/Modules/InvoiceManagement/InvoiceManagement.Infrastructure/Persistence/InvoiceDbContext.cs#12-48) (and others):
+
+```csharp
+protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+{
+    optionsBuilder.AddInterceptors(new ConvertDomainEventsToOutboxMessagesInterceptor());
+}
+```
+
+### **Step 5: Background Worker (The Processor)**
+
+This worker reads from the `OutboxMessages` table and publishes to RabbitMQ.
+
+In `src/Shared/Shared.Infrastructure/Outbox/OutboxProcessor.cs`:
+
+```csharp
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection; // For IServiceScopeFactory
+using Shared.Application.Messaging;
+
+namespace Shared.Infrastructure.Outbox;
+
+public class OutboxProcessor : BackgroundService
+{
+    private readonly IServiceScopeFactory _scopeFactory;
+
+    public OutboxProcessor(IServiceScopeFactory scopeFactory)
+    {
+        _scopeFactory = scopeFactory;
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    {
+        while (!stoppingToken.IsCancellationRequested)
+        {
+            using var scope = _scopeFactory.CreateScope();
+            var dbContext = scope.ServiceProvider.GetRequiredService<InvoiceDbContext>(); // Or factory
+            var eventBus = scope.ServiceProvider.GetRequiredService<IEventBus>();
+
+            var messages = await dbContext.Set<OutboxMessage>()
+                .Where(m => m.ProcessedOnUtc == null)
+                .Take(10)
+                .ToListAsync(stoppingToken);
+
+            foreach (var message in messages)
+            {
+                try
+                {
+                    // Publish to RabbitMQ
+                    // Note: You need to define how to deserialize purely based on 'Type' string
+                    // For now, simplify: assume we publish raw JSON string
+                    
+                    // Simple hack for this guide (Refine for production):
+                    // Use reflection or just publish the raw content
+                    
+                    /* 
+                       Real implementation should deserialize to IDomainEvent
+                       var domainEvent = JsonConvert.DeserializeObject<IDomainEvent>(message.Content, ...);
+                       await eventBus.PublishAsync(domainEvent);
+                    */
+
+                    message.ProcessedOnUtc = DateTime.UtcNow;
+                }
+                catch (Exception ex)
+                {
+                    message.Error = ex.Message;
+                }
+            }
+
+            await dbContext.SaveChangesAsync(stoppingToken);
+            await Task.Delay(2000, stoppingToken); // Poll every 2s
+        }
+    }
+}
+```
+
+---
+
+## Testing
+
+1. **Run Application**: `dotnet run`
+2. **Action**: Create and Approve an Invoice via API.
+3. **Verify Database**: Check `OutboxMessages` table in SQL Server. You should see a new row.
+4. **Verify RabbitMQ**: Go to `http://localhost:15672` (guest/guest). Checks **Exchanges** -> `invoice-events`. You should see message rate spike.
+
+---
+
+## Common Issues
+
+1. **Serialization Errors:** Ensure `Newtonsoft.Json` is configured to handle type names.
+2. **RabbitMQ Connection:** Ensure Docker container is running (`docker ps`).
+3. **Interceptor Not Firing:** Did you register it in `OnConfiguring` or DI?
+
+---

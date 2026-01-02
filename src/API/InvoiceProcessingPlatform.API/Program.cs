@@ -3,6 +3,8 @@ using InvoiceManagement.Infrastructure;
 using PaymentTracking.Infrastructure;
 using VendorManagement.Infrastructure;
 using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +31,42 @@ builder.Services.AddPaymentTrackingInfrastructure(builder.Configuration);
 
 // Add Vendor Management module
 builder.Services.AddVendorManagementInfrastructure(builder.Configuration);
+
+// Add JWT Authentication with Keycloak
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        var keycloakConfig = builder.Configuration.GetSection("Keycloak");
+        
+        options.Authority = keycloakConfig["Authority"];
+        options.Audience = keycloakConfig["Audience"];
+        options.RequireHttpsMetadata = keycloakConfig.GetValue<bool>("RequireHttpsMetadata");
+        
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = keycloakConfig.GetValue<bool>("ValidateIssuer"),
+            ValidateAudience = keycloakConfig.GetValue<bool>("ValidateAudience"),
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ClockSkew = TimeSpan.Zero
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine($"Authentication failed: {context.Exception.Message}");
+                return Task.CompletedTask;
+            },
+            OnTokenValidated = context =>
+            {
+                Console.WriteLine("Token validated successfully");
+                return Task.CompletedTask;
+            }
+        };
+    });
+
+builder.Services.AddAuthorization();
 
 // Add CORS for Angular frontend
 builder.Services.AddCors(options =>
@@ -84,6 +122,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAngular");
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 
