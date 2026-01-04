@@ -1,7 +1,6 @@
 using VendorManagement.Domain.Aggregates;
 using VendorManagement.Domain.Repositories;
 using Shared.Application.Messaging;
-using Shared.Domain.Primitives;
 using Shared.Domain.Results;
 
 namespace VendorManagement.Application.Commands.RegisterVendor;
@@ -12,14 +11,11 @@ namespace VendorManagement.Application.Commands.RegisterVendor;
 internal sealed class RegisterVendorCommandHandler : ICommandHandler<RegisterVendorCommand, Guid>
 {
     private readonly IVendorRepository _vendorRepository;
-    private readonly IUnitOfWork _unitOfWork;
 
     public RegisterVendorCommandHandler(
-        IVendorRepository vendorRepository,
-        IUnitOfWork unitOfWork)
+        IVendorRepository vendorRepository)
     {
         _vendorRepository = vendorRepository;
-        _unitOfWork = unitOfWork;
     }
 
     public async Task<Result<Guid>> Handle(RegisterVendorCommand request, CancellationToken cancellationToken)
@@ -39,8 +35,11 @@ internal sealed class RegisterVendorCommandHandler : ICommandHandler<RegisterVen
             request.CreatedBy,
             request.PaymentTermDays);
 
+        Console.WriteLine($"[VENDOR DEBUG] Created vendor with ID: {vendor.Id.Value}");
+
+        // AddAsync now saves automatically to the correct VendorDbContext
         await _vendorRepository.AddAsync(vendor, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        Console.WriteLine($"[VENDOR DEBUG] Vendor added and saved to VendorDbContext");
 
         return Result.Success(vendor.Id.Value);
     }

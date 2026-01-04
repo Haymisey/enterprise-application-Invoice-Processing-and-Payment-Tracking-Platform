@@ -23,14 +23,16 @@ builder.Services.AddMediatR(cfg =>
 // Add FluentValidation
 builder.Services.AddValidatorsFromAssemblyContaining<InvoiceManagement.Application.Commands.CreateInvoice.CreateInvoiceCommandValidator>();
 
+// Add modules in order - last registered IUnitOfWork will be used by default
+// Each module's handlers should use their specific DbContext
 // Add Invoice Management module
 builder.Services.AddInvoiceManagementInfrastructure(builder.Configuration);
 
-// Add Payment Tracking module
-builder.Services.AddPaymentTrackingInfrastructure(builder.Configuration);
-
-// Add Vendor Management module
+// Add Vendor Management module  
 builder.Services.AddVendorManagementInfrastructure(builder.Configuration);
+
+// Add Payment Tracking module LAST - this ensures PaymentTracking handlers get PaymentDbContext
+builder.Services.AddPaymentTrackingInfrastructure(builder.Configuration);
 
 // Add JWT Authentication with Keycloak
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

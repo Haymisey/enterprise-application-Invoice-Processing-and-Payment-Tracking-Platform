@@ -1,7 +1,6 @@
 using PaymentTracking.Domain.Aggregates;
 using PaymentTracking.Domain.Repositories;
 using Shared.Application.Messaging;
-using Shared.Domain.Primitives;
 using Shared.Domain.Results;
 
 namespace PaymentTracking.Application.Commands.SchedulePayment;
@@ -12,14 +11,11 @@ namespace PaymentTracking.Application.Commands.SchedulePayment;
 internal sealed class SchedulePaymentCommandHandler : ICommandHandler<SchedulePaymentCommand, Guid>
 {
     private readonly IPaymentRepository _paymentRepository;
-    private readonly IUnitOfWork _unitOfWork;
 
     public SchedulePaymentCommandHandler(
-        IPaymentRepository paymentRepository,
-        IUnitOfWork unitOfWork)
+        IPaymentRepository paymentRepository)
     {
         _paymentRepository = paymentRepository;
-        _unitOfWork = unitOfWork;
     }
 
     public async Task<Result<Guid>> Handle(SchedulePaymentCommand request, CancellationToken cancellationToken)
@@ -38,8 +34,11 @@ internal sealed class SchedulePaymentCommandHandler : ICommandHandler<SchedulePa
             request.ScheduledDate,
             request.CreatedBy);
 
+        Console.WriteLine($"[PAYMENT DEBUG] Created payment with ID: {payment.Id.Value}");
+
+        // AddAsync now saves automatically to the correct PaymentDbContext
         await _paymentRepository.AddAsync(payment, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        Console.WriteLine($"[PAYMENT DEBUG] Payment added and saved to PaymentDbContext");
 
         return Result.Success(payment.Id.Value);
     }

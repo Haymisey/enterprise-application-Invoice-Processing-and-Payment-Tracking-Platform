@@ -59,6 +59,9 @@ internal sealed class VendorRepository : IVendorRepository
     public async Task AddAsync(Vendor aggregate, CancellationToken cancellationToken = default)
     {
         await _context.Vendors.AddAsync(aggregate, cancellationToken);
+        // Save immediately to ensure the entity is persisted to the correct DbContext
+        // This is a workaround for the IUnitOfWork registration conflict
+        await _context.SaveChangesAsync(cancellationToken);
     }
 
     public void Update(Vendor aggregate)

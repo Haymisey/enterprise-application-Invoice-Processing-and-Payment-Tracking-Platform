@@ -65,6 +65,9 @@ internal sealed class InvoiceRepository : IInvoiceRepository
     public async Task AddAsync(Invoice aggregate, CancellationToken cancellationToken = default)
     {
         await _context.Invoices.AddAsync(aggregate, cancellationToken);
+        // Save immediately to ensure the entity is persisted to the correct DbContext
+        // This is a workaround for the IUnitOfWork registration conflict
+        await _context.SaveChangesAsync(cancellationToken);
     }
 
     public void Update(Invoice aggregate)

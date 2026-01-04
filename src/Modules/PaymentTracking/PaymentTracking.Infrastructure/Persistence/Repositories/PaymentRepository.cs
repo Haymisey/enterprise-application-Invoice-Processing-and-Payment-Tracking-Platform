@@ -67,6 +67,9 @@ internal sealed class PaymentRepository : IPaymentRepository
     public async Task AddAsync(Payment aggregate, CancellationToken cancellationToken = default)
     {
         await _context.Payments.AddAsync(aggregate, cancellationToken);
+        // Save immediately to ensure the entity is persisted to the correct DbContext
+        // This is a workaround for the IUnitOfWork registration conflict
+        await _context.SaveChangesAsync(cancellationToken);
     }
 
     public void Update(Payment aggregate)

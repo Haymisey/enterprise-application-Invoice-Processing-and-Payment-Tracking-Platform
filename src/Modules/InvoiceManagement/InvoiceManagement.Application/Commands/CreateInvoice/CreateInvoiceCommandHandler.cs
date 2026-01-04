@@ -2,7 +2,6 @@ using InvoiceManagement.Domain.Aggregates;
 using InvoiceManagement.Domain.Repositories;
 using InvoiceManagement.Domain.ValueObjects;
 using Shared.Application.Messaging;
-using Shared.Domain.Primitives;
 using Shared.Domain.Results;
 
 namespace InvoiceManagement.Application.Commands.CreateInvoice;
@@ -14,14 +13,11 @@ namespace InvoiceManagement.Application.Commands.CreateInvoice;
 internal sealed class CreateInvoiceCommandHandler : ICommandHandler<CreateInvoiceCommand, Guid>
 {
     private readonly IInvoiceRepository _invoiceRepository;
-    private readonly IUnitOfWork _unitOfWork;
 
     public CreateInvoiceCommandHandler(
-        IInvoiceRepository invoiceRepository,
-        IUnitOfWork unitOfWork)
+        IInvoiceRepository invoiceRepository)
     {
         _invoiceRepository = invoiceRepository;
-        _unitOfWork = unitOfWork;
     }
 
     public async Task<Result<Guid>> Handle(CreateInvoiceCommand request, CancellationToken cancellationToken)
@@ -47,9 +43,11 @@ internal sealed class CreateInvoiceCommandHandler : ICommandHandler<CreateInvoic
             invoice.AddLineItem(item.Description, item.Quantity, item.UnitPrice);
         }
 
-        // Persist
+        Console.WriteLine($"[INVOICE DEBUG] Created invoice with ID: {invoice.Id.Value}");
+
+        // Persist - AddAsync now saves automatically to the correct InvoiceDbContext
         await _invoiceRepository.AddAsync(invoice, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        Console.WriteLine($"[INVOICE DEBUG] Invoice added and saved to InvoiceDbContext");
 
         return Result.Success(invoice.Id.Value);
     }
