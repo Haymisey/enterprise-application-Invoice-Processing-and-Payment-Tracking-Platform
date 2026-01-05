@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "enNhCWvlJMkVlvXuu7Um0mzIhK7tsZMsyJ8izA/9kLxLm0Ni3KJy1WGkWvHEqS5MCnRbJ+MFypOltlQXSGIc1A==",
+  "dgSpecHash": "d573VuMAOyh3OcJbuCDoFA1ctmU3w0xN2E90SEUk32RhBHBZpg5ZPoOit3MBTI0m9sfGKX6n0FfWkdgxj6EmZw==",
   "success": true,
   "projectFilePath": "/home/saw/Desktop/EAD/enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform/src/Services/AIClassification/AIClassification.Domain/AIClassification.Domain.csproj",
   "expectedPackageFiles": [],
