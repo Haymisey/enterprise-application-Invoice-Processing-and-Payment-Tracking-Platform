@@ -1,8 +1,14 @@
 {
   "version": 2,
-  "dgSpecHash": "AgiCsvA0ADkdbUj5lF/HPhHSgER+54DX3zOiyC6l8rv+7kwYJjpehlYJsM+UlZ1VdM0NrX1INGu0eUPoJksbEw==",
+  "dgSpecHash": "72cePmaTzahvEU+VQ1JEzHIjp34z1+t6mivQIRVsZ3Xnj+JpI5NPM+pEr8tN9gmCG2rSGnctOyfJn4ydm0SNyw==",
   "success": true,
   "projectFilePath": "/home/saw/Desktop/EAD/enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform/src/Services/AIClassification/AIClassification.Application/AIClassification.Application.csproj",
-  "expectedPackageFiles": [],
+  "expectedPackageFiles": [
+    "/home/saw/.nuget/packages/fluentvalidation/11.11.0/fluentvalidation.11.11.0.nupkg.sha512",
+    "/home/saw/.nuget/packages/fluentvalidation.dependencyinjectionextensions/11.11.0/fluentvalidation.dependencyinjectionextensions.11.11.0.nupkg.sha512",
+    "/home/saw/.nuget/packages/mediatr/12.4.1/mediatr.12.4.1.nupkg.sha512",
+    "/home/saw/.nuget/packages/mediatr.contracts/2.0.1/mediatr.contracts.2.0.1.nupkg.sha512",
+    "/home/saw/.nuget/packages/microsoft.extensions.dependencyinjection.abstractions/8.0.0/microsoft.extensions.dependencyinjection.abstractions.8.0.0.nupkg.sha512"
+  ],
   "logs": []
 }
