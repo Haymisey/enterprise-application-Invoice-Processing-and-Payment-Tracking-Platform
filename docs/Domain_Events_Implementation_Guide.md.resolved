@@ -11,7 +11,7 @@
 You will implement the **Distributed Event Bus** using **RabbitMQ** and the **Transactional Outbox Pattern**. This is the core of our microservices architecture.
 
 **Your Goal:**
-When an Invoice is Approved (Core Domain), a [PaymentScheduledEvent](file:///c:/Users/hayma/OneDrive/Desktop/EAD-Lab/enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform/src/Modules/PaymentTracking/PaymentTracking.Domain/Events/PaymentEvents.cs#8-15) is published to RabbitMQ. The Payment Service listens and creates a Payment.
+When an Invoice is Approved (Core Domain), a [PaymentScheduledEvent](~/enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform/src/Modules/PaymentTracking/PaymentTracking.Domain/Events/PaymentEvents.cs#8-15) is published to RabbitMQ. The Payment Service listens and creates a Payment.
 
 ---
 
@@ -161,7 +161,7 @@ public sealed class OutboxMessageConfiguration : IEntityTypeConfiguration<Outbox
 
 ### **Step 4: Update DbContext (Interceptors)**
 
-We need to automatically save Domain Events to the Outbox table when [SaveChangesAsync](file:///c:/Users/hayma/OneDrive/Desktop/EAD-Lab/enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform/src/Modules/PaymentTracking/PaymentTracking.Infrastructure/Persistence/PaymentDbContext.cs#25-44) is called.
+We need to automatically save Domain Events to the Outbox table when [SaveChangesAsync](~/enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform/src/Modules/PaymentTracking/PaymentTracking.Infrastructure/Persistence/PaymentDbContext.cs#25-44) is called.
 
 Create `src/Shared/Shared.Infrastructure/Interceptors/ConvertDomainEventsToOutboxMessagesInterceptor.cs`:
 
@@ -211,7 +211,7 @@ public sealed class ConvertDomainEventsToOutboxMessagesInterceptor : SaveChanges
 }
 ```
 
-**Register this Interceptor** in your [InvoiceDbContext](file:///c:/Users/hayma/OneDrive/Desktop/EAD-Lab/enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform/src/Modules/InvoiceManagement/InvoiceManagement.Infrastructure/Persistence/InvoiceDbContext.cs#12-48) (and others):
+**Register this Interceptor** in your [InvoiceDbContext](~/enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform/src/Modules/InvoiceManagement/InvoiceManagement.Infrastructure/Persistence/InvoiceDbContext.cs#12-48) (and others):
 
 ```csharp
 protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
