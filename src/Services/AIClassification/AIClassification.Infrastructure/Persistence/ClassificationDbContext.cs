@@ -1,9 +1,10 @@
 using AIClassification.Domain.Aggregates;
 using Microsoft.EntityFrameworkCore;
+using Shared.Domain.Primitives; 
 
 namespace AIClassification.Infrastructure.Persistence;
 
-public sealed class ClassificationDbContext : DbContext
+public sealed class ClassificationDbContext : DbContext, IUnitOfWork
 {
     public ClassificationDbContext(DbContextOptions<ClassificationDbContext> options)
         : base(options)

@@ -1,115 +1,112 @@
 using System.Text.Json;
 using AIClassification.Application.Services;
 using AIClassification.Domain.ValueObjects;
-using Google.Generative.AI;
 using Microsoft.Extensions.Configuration;
+using Mscc.GenerativeAI;
 
-namespace AIClassification.Infrastructure.AI;
-
-public class GeminiService : IGeminiService
+namespace AIClassification.Infrastructure.AI
 {
-    private readonly string _apiKey;
-    private const string ModelName = "gemini-1.5-flash"; 
-
-    public GeminiService(IConfiguration config)
+    public class GeminiService : IGeminiService
     {
-        // This reads the key you set in User Secrets or Environment Variables
-        _apiKey = config["Gemini:ApiKey"] ?? throw new ArgumentNullException("Gemini:ApiKey not configured");
-    }
+        private readonly string _apiKey;
 
-    public async Task<(ExtractedInvoiceData Data, double Confidence)> ExtractDataAsync(string imageUrl, CancellationToken ct = default)
-    {
-        // Initialize Gemini
-        var model = new GenerativeModel(_apiKey, ModelName);
+        // Use the model enum or string constant as needed
+        private const string ModelName = "Gemini06"; // use your preferred model
 
-        var prompt = @"
-            Analyze this image. It is an invoice. Extract the following data in strict JSON format:
-            {
-                ""invoiceNumber"": ""string or null"",
-                ""vendorName"": ""string or null"",
-                ""totalAmount"": decimal or null,
-                ""currency"": ""string (e.g. USD) or null"",
-                ""issueDate"": ""YYYY-MM-DD or null"",
-                ""dueDate"": ""YYYY-MM-DD or null"",
-                ""lineItems"": [""string description""],
-                ""confidence"": 0.0 to 1.0 representing how legible the image is
-            }
-            Return ONLY the JSON. No markdown.";
-
-        try
+        public GeminiService(IConfiguration config)
         {
-            // Send request to Google
-            var response = await model.GenerateContentAsync(prompt, imageUrl);
-            
-            // Clean up response (sometimes AI adds ```json at the start)
-            var json = response.Text.Replace("```json", "").Replace("```", "").Trim();
-            
+            _apiKey = config["Gemini:ApiKey"]
+                      ?? throw new ArgumentNullException("Gemini:ApiKey not configured");
+        }
+
+        public async Task<(ExtractedInvoiceData data, double confidence)> ExtractInvoiceDataAsync(string imageUrl, CancellationToken ct = default)
+        {
+            // Create the client
+            var ai = new GoogleAI(apiKey: _apiKey);
+
+            // Create the model
+            var model = ai.GenerativeModel(model: ModelName);
+
+            // Prompt for invoice extraction
+            var prompt = @"
+Analyze this image. It is an invoice. Extract the following data in strict JSON:
+{
+""invoiceNumber"": ""string or null"",
+""vendorName"": ""string or null"",
+""currency"": ""string or null"",
+""totalAmount"": number or null,
+""issueDate"": ""YYYY-MM-DD or null"",
+""dueDate"": ""YYYY-MM-DD or null"",
+""lineItems"": [""string description""],
+""confidence"": number 0.0-1.0
+}
+Return strict JSON.";
+
+            // Call the API
+            var response = await model.GenerateContent(prompt);
+
+            var json = response?.Text?.Trim() ?? throw new Exception("No response text");
+
+            // Clean up if Markdown ``` present
+            json = json.Replace("```json", "").Replace("```", "").Trim();
+
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-            var result = JsonSerializer.Deserialize<GeminiExtractionResult>(json, options);
+            var result = JsonSerializer.Deserialize<GeminiExtractionResult>(json, options)
+                         ?? throw new Exception("AI response invalid");
 
-            if (result == null) throw new Exception("Failed to deserialize AI response");
-
-            // Map to Domain Object
             var data = ExtractedInvoiceData.Create(
-                result.InvoiceNumber, result.VendorName, result.TotalAmount,
-                result.Currency, result.IssueDate, result.DueDate, result.LineItems);
+                result.InvoiceNumber,
+                result.VendorName,
+                result.TotalAmount,
+                result.Currency,
+                result.IssueDate,
+                result.DueDate,
+                result.LineItems);
 
             return (data, result.Confidence);
         }
-        catch (Exception ex)
+
+        public async Task<(bool isFraudulent, string? reason)> DetectFraudAsync(ExtractedInvoiceData data, CancellationToken ct = default)
         {
-            throw new Exception($"Gemini Extraction Failed: {ex.Message}", ex);
-        }
-    }
+            var ai = new GoogleAI(apiKey: _apiKey);
+            var model = ai.GenerativeModel(model: ModelName);
 
-    public async Task<(bool IsFraudulent, string? Reason)> DetectFraudAsync(ExtractedInvoiceData data, CancellationToken ct = default)
-    {
-        var model = new GenerativeModel(_apiKey, ModelName);
+            var prompt = $@"
+Act as a forensic accountant. Given:
+Vendor: {data.VendorName}
+Amount: {data.TotalAmount}
+Currency: {data.Currency}
+IssueDate: {data.IssueDate}
 
-        var prompt = $@"
-            Act as a forensic accountant. Analyze this invoice data for fraud indicators.
-            Data:
-            Vendor: {data.VendorName}
-            Amount: {data.TotalAmount} {data.Currency}
-            Date: {data.IssueDate}
-            
-            Check for:
-            1. Suspiciously round numbers for large amounts.
-            2. Dates in the future or too far in the past.
-            3. Missing critical fields.
+Return JSON: {{""isFraudulent"": bool,""reason"": ""string or null""}}";
 
-            Return JSON: {{ ""isFraudulent"": boolean, ""reason"": ""string or null"" }}";
+            var response = await model.GenerateContent(prompt);
 
-        try
-        {
-            var response = await model.GenerateContentAsync(prompt);
-            var json = response.Text.Replace("```json", "").Replace("```", "").Trim();
-            var result = JsonSerializer.Deserialize<GeminiFraudResult>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            var json = response?.Text?.Trim() ?? string.Empty;
+            json = json.Replace("```json", "").Replace("```", "").Trim();
+
+            var result = JsonSerializer.Deserialize<GeminiFraudResult>(json,
+                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             return (result?.IsFraudulent ?? false, result?.Reason);
         }
-        catch
+
+        private class GeminiExtractionResult
         {
-            return (false, null);
+            public string? InvoiceNumber { get; set; }
+            public string? VendorName { get; set; }
+            public decimal? TotalAmount { get; set; }
+            public string? Currency { get; set; }
+            public DateTime? IssueDate { get; set; }
+            public DateTime? DueDate { get; set; }
+            public List<string>? LineItems { get; set; }
+            public double Confidence { get; set; }
         }
-    }
 
-    // Helper classes for JSON parsing
-    private class GeminiExtractionResult
-    {
-        public string? InvoiceNumber { get; set; }
-        public string? VendorName { get; set; }
-        public decimal? TotalAmount { get; set; }
-        public string? Currency { get; set; }
-        public DateTime? IssueDate { get; set; }
-        public DateTime? DueDate { get; set; }
-        public List<string>? LineItems { get; set; }
-        public double Confidence { get; set; }
-    }
-
-    private class GeminiFraudResult
-    {
-        public bool IsFraudulent { get; set; }
-        public string? Reason { get; set; }
+        private class GeminiFraudResult
+        {
+            public bool IsFraudulent { get; set; }
+            public string? Reason { get; set; }
+        }
     }
 }
