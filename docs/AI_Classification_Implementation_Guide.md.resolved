@@ -565,7 +565,7 @@ Check for:
 }
 ```
 
-#### 3.2 Update [appsettings.json](file:///c:/Users/hayma/OneDrive/Desktop/EAD-Lab/enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform/src/API/InvoiceProcessingPlatform.API/appsettings.json) in API project
+#### 3.2 Update [appsettings.json](~/enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform/src/API/InvoiceProcessingPlatform.API/appsettings.json) in API project
 
 ```json
 {
@@ -576,7 +576,7 @@ Check for:
 ```
 
 > [!CAUTION]
-> **NEVER commit your API key to Git!** Add it to [.gitignore](file:///c:/Users/hayma/OneDrive/Desktop/EAD-Lab/enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform/.gitignore) or use environment variables.
+> **NEVER commit your API key to Git!** Add it to [.gitignore](~/enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform/.gitignore) or use environment variables.
 
 ---
 
@@ -681,7 +681,7 @@ public class InvoiceClassificationTests
 1. Go to [Google AI Studio](https://aistudio.google.com/app/apikey)
 2. Click "Create API Key"
 3. Copy the key
-4. Add to [appsettings.json](file:///c:/Users/hayma/OneDrive/Desktop/EAD-Lab/enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform/src/API/InvoiceProcessingPlatform.API/appsettings.json) (or use environment variable)
+4. Add to [appsettings.json](~/enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform/src/API/InvoiceProcessingPlatform.API/appsettings.json) (or use environment variable)
 
 ---
 
