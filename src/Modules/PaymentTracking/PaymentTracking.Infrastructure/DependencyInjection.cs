@@ -35,6 +35,7 @@ public static class DependencyInjection
         // NOTE: This registration order matters - PaymentTracking should be registered LAST in Program.cs
         // to ensure PaymentTracking handlers get PaymentDbContext instead of other modules' DbContexts
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<PaymentDbContext>());
+        services.AddScoped<DbContext>(sp => sp.GetRequiredService<PaymentDbContext>());
 
         return services;
     }

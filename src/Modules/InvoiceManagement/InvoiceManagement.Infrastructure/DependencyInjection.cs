@@ -32,6 +32,7 @@ public static class DependencyInjection
         
         // Register Unit of Work
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<InvoiceDbContext>());
+        services.AddScoped<DbContext>(sp => sp.GetRequiredService<InvoiceDbContext>());
 
         return services;
     }
