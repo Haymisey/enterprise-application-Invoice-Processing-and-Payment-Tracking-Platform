@@ -1,20 +1,20 @@
-version: '3.8'
-
 services:
   ai-classification-api:
     image: ai-classification-api
     build:
-      context: .
+      context: ..
       dockerfile: src/Services/AIClassification/AIClassification.API/Dockerfile
     environment:
-    "ApiKey": "AIzaSyBS7_ENSzrO_1OXHPVNodFVGTsPBBxg9Z0"
-      
+      - ApiKey=AIzaSyBS7_ENSzrO_1OXHPVNodFVGTsPBBxg9Z0
+      - Gemini__ApiKey=AIzaSyBS7_ENSzrO_1OXHPVNodFVGTsPBBxg9Z0
+      - ConnectionStrings__Database=Server=sqlserver;Database=AIClassificationDb;User Id=sa;Password=Invoice@SecurePass123!;TrustServerCertificate=True;
     container_name: ai-classification-api
     networks:
       - invoice-network
-         # This reads from the .env file
     ports:
       - "5000:8080"
+    depends_on:
+      - sqlserver
   # SQL Server Database
   sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest

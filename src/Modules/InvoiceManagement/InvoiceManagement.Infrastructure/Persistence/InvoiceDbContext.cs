@@ -2,6 +2,8 @@ using InvoiceManagement.Domain.Aggregates;
 using InvoiceManagement.Domain.Entities;
 using Microsoft.EntityFrameworkCore;
 using Shared.Domain.Primitives;
+using Shared.Infrastructure.Outbox;
+using Shared.Infrastructure.Interceptors;
 
 namespace InvoiceManagement.Infrastructure.Persistence;
 
@@ -22,6 +24,13 @@ public sealed class InvoiceDbContext : DbContext, IUnitOfWork
     {
         modelBuilder.HasDefaultSchema("invoice");
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(InvoiceDbContext).Assembly);
+        modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.AddInterceptors(new ConvertDomainEventsToOutboxMessagesInterceptor());
+        base.OnConfiguring(optionsBuilder);
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -38,10 +47,6 @@ public sealed class InvoiceDbContext : DbContext, IUnitOfWork
         }
 
         var result = await base.SaveChangesAsync(cancellationToken);
-
-        // TODO: Publish domain events to message broker after save
-        // This is where the Transactional Outbox pattern would be implemented
-
         return result;
     }
 }

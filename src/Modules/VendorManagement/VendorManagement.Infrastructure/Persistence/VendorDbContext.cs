@@ -1,6 +1,8 @@
 using VendorManagement.Domain.Aggregates;
 using Microsoft.EntityFrameworkCore;
 using Shared.Domain.Primitives;
+using Shared.Infrastructure.Outbox;
+using Shared.Infrastructure.Interceptors;
 
 namespace VendorManagement.Infrastructure.Persistence;
 
@@ -19,6 +21,13 @@ public sealed class VendorDbContext : DbContext, IUnitOfWork
     {
         modelBuilder.HasDefaultSchema("vendor");
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(VendorDbContext).Assembly);
+        modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.AddInterceptors(new ConvertDomainEventsToOutboxMessagesInterceptor());
+        base.OnConfiguring(optionsBuilder);
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -33,8 +42,6 @@ public sealed class VendorDbContext : DbContext, IUnitOfWork
         }
 
         var result = await base.SaveChangesAsync(cancellationToken);
-
-        // TODO: Publish domain events to message broker
 
         return result;
     }

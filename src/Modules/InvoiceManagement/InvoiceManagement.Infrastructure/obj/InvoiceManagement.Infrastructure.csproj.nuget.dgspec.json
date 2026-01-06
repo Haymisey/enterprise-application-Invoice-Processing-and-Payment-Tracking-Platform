@@ -1754,7 +1754,14 @@
         "frameworks": {
           "net10.0": {
             "targetAlias": "net10.0",
-            "projectReferences": {}
+            "projectReferences": {
+              "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Application\\Shared.Application.csproj": {
+                "projectPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Application\\Shared.Application.csproj"
+              },
+              "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Domain\\Shared.Domain.csproj": {
+                "projectPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Domain\\Shared.Domain.csproj"
+              }
+            }
           }
         },
         "warningProperties": {
@@ -1772,6 +1779,32 @@
       "frameworks": {
         "net10.0": {
           "targetAlias": "net10.0",
+          "dependencies": {
+            "Microsoft.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[10.0.0, )"
+            },
+            "Microsoft.EntityFrameworkCore.Relational": {
+              "target": "Package",
+              "version": "[10.0.0, )"
+            },
+            "Microsoft.Extensions.Configuration.Abstractions": {
+              "target": "Package",
+              "version": "[10.0.0, )"
+            },
+            "Microsoft.Extensions.Hosting.Abstractions": {
+              "target": "Package",
+              "version": "[10.0.0, )"
+            },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[13.0.3, )"
+            },
+            "RabbitMQ.Client": {
+              "target": "Package",
+              "version": "[6.8.1, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",

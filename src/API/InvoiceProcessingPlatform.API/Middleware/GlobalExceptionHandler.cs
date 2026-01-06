@@ -34,7 +34,7 @@ public class GlobalExceptionHandler : IExceptionHandler
             problemDetails.Extensions["errors"] = validationException.Errors;
         }
 
-        httpContext.Response.Status = problemDetails.Status.Value;
+        httpContext.Response.StatusCode = problemDetails.Status.Value;
 
         await httpContext.Response.WriteAsJsonAsync(problemDetails, cancellationToken);
 

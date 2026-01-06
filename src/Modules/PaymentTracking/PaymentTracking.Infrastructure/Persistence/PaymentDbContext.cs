@@ -1,6 +1,8 @@
 using PaymentTracking.Domain.Aggregates;
 using Microsoft.EntityFrameworkCore;
 using Shared.Domain.Primitives;
+using Shared.Infrastructure.Outbox;
+using Shared.Infrastructure.Interceptors;
 
 namespace PaymentTracking.Infrastructure.Persistence;
 
@@ -20,6 +22,13 @@ public sealed class PaymentDbContext : DbContext, IUnitOfWork
     {
         modelBuilder.HasDefaultSchema("payment");
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(PaymentDbContext).Assembly);
+        modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.AddInterceptors(new ConvertDomainEventsToOutboxMessagesInterceptor());
+        base.OnConfiguring(optionsBuilder);
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
@@ -36,8 +45,6 @@ public sealed class PaymentDbContext : DbContext, IUnitOfWork
         }
 
         var result = await base.SaveChangesAsync(cancellationToken);
-
-        // TODO: Publish domain events to message broker after save
 
         return result;
     }
