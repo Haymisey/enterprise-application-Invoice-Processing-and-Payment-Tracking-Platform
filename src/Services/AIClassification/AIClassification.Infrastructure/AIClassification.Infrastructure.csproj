@@ -1,5 +1,23 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <ItemGroup>
+    <ProjectReference Include="..\AIClassification.Application\AIClassification.Application.csproj" />
+    <ProjectReference Include="..\AIClassification.Domain\AIClassification.Domain.csproj" />
+    <ProjectReference Include="..\..\..\Shared\Shared.Infrastructure\Shared.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Use Mscc.GenerativeAI 3.0.2 -->
+    <PackageReference Include="Mscc.GenerativeAI" Version="3.0.2" />
+
+    <!-- Upgrade Microsoft.Extensions packages to 10.0.1 to match Mscc.GenerativeAI -->
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.1" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.1" />
+
+    <!-- EF Core can stay at 8.0.0 for .NET 8 -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
