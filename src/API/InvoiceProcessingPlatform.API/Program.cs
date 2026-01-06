@@ -5,19 +5,32 @@ using VendorManagement.Infrastructure;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using InvoiceProcessingPlatform.API.Middleware;
+using Shared.Application.Behaviors;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
 builder.Services.AddControllers();
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Invoice Processing Platform API", Version = "v1" });
+});
+
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+builder.Services.AddProblemDetails();
 
 // Add MediatR - register handlers from all modules
 builder.Services.AddMediatR(cfg =>
 {
-    cfg.RegisterServicesFromAssemblyContaining<InvoiceManagement.Application.Commands.CreateInvoice.CreateInvoiceCommand>();
-    cfg.RegisterServicesFromAssemblyContaining<PaymentTracking.Application.Commands.SchedulePayment.SchedulePaymentCommand>();
-    cfg.RegisterServicesFromAssemblyContaining<VendorManagement.Application.Commands.RegisterVendor.RegisterVendorCommand>();
+    cfg.RegisterServicesFromAssemblies(
+        typeof(InvoiceManagement.Application.Commands.CreateInvoice.CreateInvoiceCommand).Assembly,
+        typeof(PaymentTracking.Application.Commands.SchedulePayment.SchedulePaymentCommand).Assembly,
+        typeof(VendorManagement.Application.Commands.RegisterVendor.RegisterVendorCommand).Assembly
+    );
+    cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
 
 // Add FluentValidation
@@ -85,41 +98,12 @@ builder.Services.AddCors(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline
+app.UseExceptionHandler();
+
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
-    // Serve Swagger UI from a static HTML file
-    app.UseStaticFiles();
-    app.MapGet("/swagger", async context =>
-    {
-        var html = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Invoice Processing Platform API - Swagger UI</title>
-                <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.10.5/swagger-ui.css" />
-            </head>
-            <body>
-                <div id="swagger-ui"></div>
-                <script src="https://unpkg.com/swagger-ui-dist@5.10.5/swagger-ui-bundle.js"></script>
-                <script>
-                    window.onload = function() {
-                        SwaggerUIBundle({
-                            url: "/openapi/v1.json",
-                            dom_id: "#swagger-ui",
-                            presets: [
-                                SwaggerUIBundle.presets.apis,
-                                SwaggerUIBundle.presets.standalone
-                            ]
-                        });
-                    };
-                </script>
-            </body>
-            </html>
-            """;
-        context.Response.ContentType = "text/html";
-        await context.Response.WriteAsync(html);
-    });
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.UseHttpsRedirection();
