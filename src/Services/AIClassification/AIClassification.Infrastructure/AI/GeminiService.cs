@@ -9,16 +9,17 @@ namespace AIClassification.Infrastructure.AI;
 public class GeminiService : IGeminiService
 {
     private readonly string _apiKey;
-    // Using flash model for speed and cost-effectiveness
     private const string ModelName = "gemini-1.5-flash"; 
 
     public GeminiService(IConfiguration config)
     {
-        _apiKey = config["Gemini:ApiKey"] ?? throw new ArgumentNullException("Gemini:ApiKey not found");
+        // This reads the key you set in User Secrets or Environment Variables
+        _apiKey = config["Gemini:ApiKey"] ?? throw new ArgumentNullException("Gemini:ApiKey not configured");
     }
 
     public async Task<(ExtractedInvoiceData Data, double Confidence)> ExtractDataAsync(string imageUrl, CancellationToken ct = default)
     {
+        // Initialize Gemini
         var model = new GenerativeModel(_apiKey, ModelName);
 
         var prompt = @"
@@ -37,20 +38,18 @@ public class GeminiService : IGeminiService
 
         try
         {
-            // Note: Google.Generative.AI handles image fetching if you pass URI, 
-            // or you might need to download bytes first depending on the library version.
-            // Assuming the library accepts the image URI or base64.
-            // If library requires parts:
-            // var parts = new [] { new Part { Text = prompt }, new Part { InlineData = new GenerationPart.InlineData { MimeType = "image/jpeg", Data = ... } } };
+            // Send request to Google
+            var response = await model.GenerateContentAsync(prompt, imageUrl);
             
-            var response = await model.GenerateContentAsync(prompt, imageUrl); // Simplified call
-            var json = CleanJson(response.Text);
+            // Clean up response (sometimes AI adds ```json at the start)
+            var json = response.Text.Replace("```json", "").Replace("```", "").Trim();
             
             var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
             var result = JsonSerializer.Deserialize<GeminiExtractionResult>(json, options);
 
             if (result == null) throw new Exception("Failed to deserialize AI response");
 
+            // Map to Domain Object
             var data = ExtractedInvoiceData.Create(
                 result.InvoiceNumber, result.VendorName, result.TotalAmount,
                 result.Currency, result.IssueDate, result.DueDate, result.LineItems);
@@ -84,23 +83,18 @@ public class GeminiService : IGeminiService
         try
         {
             var response = await model.GenerateContentAsync(prompt);
-            var json = CleanJson(response.Text);
+            var json = response.Text.Replace("```json", "").Replace("```", "").Trim();
             var result = JsonSerializer.Deserialize<GeminiFraudResult>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
             return (result?.IsFraudulent ?? false, result?.Reason);
         }
         catch
         {
-            return (false, null); // Default to safe
+            return (false, null);
         }
     }
 
-    private string CleanJson(string text)
-    {
-        return text.Replace("```json", "").Replace("```", "").Trim();
-    }
-
-    // Private DTOs for JSON deserialization
+    // Helper classes for JSON parsing
     private class GeminiExtractionResult
     {
         public string? InvoiceNumber { get; set; }
