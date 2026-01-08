@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Infrastructure\\Shared.Infrastructure.csproj": {}
+    "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Infrastructure\\Shared.Infrastructure.csproj": {}
   },
   "projects": {
-    "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Application\\Shared.Application.csproj": {
+    "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Application\\Shared.Application.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Application\\Shared.Application.csproj",
+        "projectUniqueName": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Application\\Shared.Application.csproj",
         "projectName": "Shared.Application",
-        "projectPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Application\\Shared.Application.csproj",
-        "packagesPath": "C:\\Users\\hayma\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Application\\obj\\",
+        "projectPath": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Application\\Shared.Application.csproj",
+        "packagesPath": "C:\\Users\\hareg\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Application\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\hayma\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\hareg\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
@@ -26,8 +26,8 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Domain\\Shared.Domain.csproj": {
-                "projectPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Domain\\Shared.Domain.csproj"
+              "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Domain\\Shared.Domain.csproj": {
+                "projectPath": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Domain\\Shared.Domain.csproj"
               }
             }
           }
@@ -77,7 +77,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
@@ -355,17 +355,17 @@
         }
       }
     },
-    "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Domain\\Shared.Domain.csproj": {
+    "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Domain\\Shared.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Domain\\Shared.Domain.csproj",
+        "projectUniqueName": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Domain\\Shared.Domain.csproj",
         "projectName": "Shared.Domain",
-        "projectPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Domain\\Shared.Domain.csproj",
-        "packagesPath": "C:\\Users\\hayma\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Domain\\obj\\",
+        "projectPath": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Domain\\Shared.Domain.csproj",
+        "packagesPath": "C:\\Users\\hareg\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\hayma\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\hareg\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
@@ -410,7 +410,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",
@@ -688,17 +688,17 @@
         }
       }
     },
-    "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Infrastructure\\Shared.Infrastructure.csproj": {
+    "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Infrastructure\\Shared.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Infrastructure\\Shared.Infrastructure.csproj",
+        "projectUniqueName": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Infrastructure\\Shared.Infrastructure.csproj",
         "projectName": "Shared.Infrastructure",
-        "projectPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Infrastructure\\Shared.Infrastructure.csproj",
-        "packagesPath": "C:\\Users\\hayma\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Infrastructure\\obj\\",
+        "projectPath": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Infrastructure\\Shared.Infrastructure.csproj",
+        "packagesPath": "C:\\Users\\hareg\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Infrastructure\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\hayma\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\hareg\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
@@ -710,11 +710,11 @@
           "net10.0": {
             "targetAlias": "net10.0",
             "projectReferences": {
-              "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Application\\Shared.Application.csproj": {
-                "projectPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Application\\Shared.Application.csproj"
+              "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Application\\Shared.Application.csproj": {
+                "projectPath": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Application\\Shared.Application.csproj"
               },
-              "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Domain\\Shared.Domain.csproj": {
-                "projectPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Domain\\Shared.Domain.csproj"
+              "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Domain\\Shared.Domain.csproj": {
+                "projectPath": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Domain\\Shared.Domain.csproj"
               }
             }
           }
@@ -776,7 +776,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",

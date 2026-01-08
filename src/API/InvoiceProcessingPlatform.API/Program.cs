@@ -1,4 +1,6 @@
 using FluentValidation;
+using System.Security.Claims;
+using System.Text.Json;
 using InvoiceManagement.Infrastructure;
 using InvoiceManagement.Infrastructure.Persistence;
 using PaymentTracking.Infrastructure;
@@ -118,6 +120,36 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             OnTokenValidated = context =>
             {
                 Console.WriteLine("Token validated successfully");
+
+                // Map Keycloak realm_access roles to ClaimTypes.Role
+                if (context.Principal?.Identity is ClaimsIdentity claimsIdentity)
+                {
+                    var realmAccess = context.Principal.FindFirst("realm_access")?.Value;
+                    if (!string.IsNullOrEmpty(realmAccess))
+                    {
+                        try 
+                        {
+                            using var doc = JsonDocument.Parse(realmAccess);
+                            if (doc.RootElement.TryGetProperty("roles", out var rolesElement))
+                            {
+                                foreach (var role in rolesElement.EnumerateArray())
+                                {
+                                    var roleValue = role.GetString();
+                                    if (!string.IsNullOrEmpty(roleValue))
+                                    {
+                                        claimsIdentity.AddClaim(new Claim(ClaimTypes.Role, roleValue));
+                                        Console.WriteLine($"Mapped Keycloak role: {roleValue}");
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Error parsing realm_access roles: {ex.Message}");
+                        }
+                    }
+                }
+
                 return Task.CompletedTask;
             }
         };

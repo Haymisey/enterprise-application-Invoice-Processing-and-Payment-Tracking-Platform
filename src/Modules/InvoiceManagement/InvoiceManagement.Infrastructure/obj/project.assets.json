@@ -4786,19 +4786,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\hayma\\.nuget\\packages\\": {}
+    "C:\\Users\\hareg\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\InvoiceManagement\\InvoiceManagement.Infrastructure\\InvoiceManagement.Infrastructure.csproj",
+      "projectUniqueName": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\InvoiceManagement\\InvoiceManagement.Infrastructure\\InvoiceManagement.Infrastructure.csproj",
       "projectName": "InvoiceManagement.Infrastructure",
-      "projectPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\InvoiceManagement\\InvoiceManagement.Infrastructure\\InvoiceManagement.Infrastructure.csproj",
-      "packagesPath": "C:\\Users\\hayma\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\InvoiceManagement\\InvoiceManagement.Infrastructure\\obj\\",
+      "projectPath": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\InvoiceManagement\\InvoiceManagement.Infrastructure\\InvoiceManagement.Infrastructure.csproj",
+      "packagesPath": "C:\\Users\\hareg\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\InvoiceManagement\\InvoiceManagement.Infrastructure\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\hayma\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\hareg\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net10.0"
@@ -4810,17 +4810,17 @@
         "net10.0": {
           "targetAlias": "net10.0",
           "projectReferences": {
-            "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\InvoiceManagement\\InvoiceManagement.Application\\InvoiceManagement.Application.csproj": {
-              "projectPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\InvoiceManagement\\InvoiceManagement.Application\\InvoiceManagement.Application.csproj"
+            "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\InvoiceManagement\\InvoiceManagement.Application\\InvoiceManagement.Application.csproj": {
+              "projectPath": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\InvoiceManagement\\InvoiceManagement.Application\\InvoiceManagement.Application.csproj"
             },
-            "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\InvoiceManagement\\InvoiceManagement.Domain\\InvoiceManagement.Domain.csproj": {
-              "projectPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\InvoiceManagement\\InvoiceManagement.Domain\\InvoiceManagement.Domain.csproj"
+            "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\InvoiceManagement\\InvoiceManagement.Domain\\InvoiceManagement.Domain.csproj": {
+              "projectPath": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\InvoiceManagement\\InvoiceManagement.Domain\\InvoiceManagement.Domain.csproj"
             },
-            "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Domain\\Shared.Domain.csproj": {
-              "projectPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Domain\\Shared.Domain.csproj"
+            "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Domain\\Shared.Domain.csproj": {
+              "projectPath": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Domain\\Shared.Domain.csproj"
             },
-            "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Infrastructure\\Shared.Infrastructure.csproj": {
-              "projectPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Infrastructure\\Shared.Infrastructure.csproj"
+            "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Infrastructure\\Shared.Infrastructure.csproj": {
+              "projectPath": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Infrastructure\\Shared.Infrastructure.csproj"
             }
           }
         }
@@ -4878,7 +4878,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100/PortableRuntimeIdentifierGraph.json",
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101/PortableRuntimeIdentifierGraph.json",
         "packagesToPrune": {
           "Microsoft.CSharp": "(,4.7.32767]",
           "Microsoft.VisualBasic": "(,10.4.32767]",
