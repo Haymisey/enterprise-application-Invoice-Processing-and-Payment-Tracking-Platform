@@ -1,10 +1,13 @@
 using AIClassification.Domain.Aggregates;
+using AIClassification.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
-using Shared.Domain.Primitives; 
+using Shared.Domain.Primitives;
+using Shared.Infrastructure.Outbox;
+using Shared.Infrastructure.Interceptors;
 
 namespace AIClassification.Infrastructure.Persistence;
 
-public sealed class ClassificationDbContext : DbContext, IUnitOfWork
+public sealed class ClassificationDbContext : DbContext, IAIUnitOfWork
 {
     public ClassificationDbContext(DbContextOptions<ClassificationDbContext> options)
         : base(options)
@@ -15,8 +18,15 @@ public sealed class ClassificationDbContext : DbContext, IUnitOfWork
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        // Automatically finds the Configuration file we wrote in Step 3.3
+        modelBuilder.HasDefaultSchema("classification");
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(ClassificationDbContext).Assembly);
+        modelBuilder.ApplyConfiguration(new OutboxMessageConfiguration());
         base.OnModelCreating(modelBuilder);
+    }
+
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        optionsBuilder.AddInterceptors(new ConvertDomainEventsToOutboxMessagesInterceptor());
+        base.OnConfiguring(optionsBuilder);
     }
 }

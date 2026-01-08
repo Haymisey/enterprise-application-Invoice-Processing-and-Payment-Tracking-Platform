@@ -12,11 +12,11 @@ namespace InvoiceManagement.Application.Commands.SubmitInvoice;
 internal sealed class SubmitInvoiceCommandHandler : ICommandHandler<SubmitInvoiceCommand>
 {
     private readonly IInvoiceRepository _invoiceRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IInvoiceUnitOfWork _unitOfWork;
 
     public SubmitInvoiceCommandHandler(
         IInvoiceRepository invoiceRepository,
-        IUnitOfWork unitOfWork)
+        IInvoiceUnitOfWork unitOfWork)
     {
         _invoiceRepository = invoiceRepository;
         _unitOfWork = unitOfWork;

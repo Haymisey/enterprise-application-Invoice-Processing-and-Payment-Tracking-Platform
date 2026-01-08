@@ -27,6 +27,7 @@ public static class DependencyInjection
                 }));
 
         services.AddScoped<IVendorRepository, VendorRepository>();
+        services.AddScoped<IVendorUnitOfWork>(sp => sp.GetRequiredService<VendorDbContext>());
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<VendorDbContext>());
         services.AddScoped<DbContext>(sp => sp.GetRequiredService<VendorDbContext>());
 

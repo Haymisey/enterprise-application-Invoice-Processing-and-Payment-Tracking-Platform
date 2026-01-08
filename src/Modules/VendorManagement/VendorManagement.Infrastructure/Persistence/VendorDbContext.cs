@@ -1,4 +1,5 @@
 using VendorManagement.Domain.Aggregates;
+using VendorManagement.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Shared.Domain.Primitives;
 using Shared.Infrastructure.Outbox;
@@ -9,7 +10,7 @@ namespace VendorManagement.Infrastructure.Persistence;
 /// <summary>
 /// DbContext for Vendor Management bounded context.
 /// </summary>
-public sealed class VendorDbContext : DbContext, IUnitOfWork
+public sealed class VendorDbContext : DbContext, IVendorUnitOfWork
 {
     public DbSet<Vendor> Vendors => Set<Vendor>();
 
@@ -28,21 +29,5 @@ public sealed class VendorDbContext : DbContext, IUnitOfWork
     {
         optionsBuilder.AddInterceptors(new ConvertDomainEventsToOutboxMessagesInterceptor());
         base.OnConfiguring(optionsBuilder);
-    }
-
-    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        var domainEvents = ChangeTracker.Entries<AggregateRoot<VendorManagement.Domain.ValueObjects.VendorId>>()
-            .SelectMany(e => e.Entity.DomainEvents)
-            .ToList();
-
-        foreach (var entry in ChangeTracker.Entries<AggregateRoot<VendorManagement.Domain.ValueObjects.VendorId>>())
-        {
-            entry.Entity.ClearDomainEvents();
-        }
-
-        var result = await base.SaveChangesAsync(cancellationToken);
-
-        return result;
     }
 }

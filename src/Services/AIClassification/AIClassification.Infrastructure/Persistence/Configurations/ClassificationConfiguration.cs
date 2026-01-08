@@ -2,6 +2,7 @@ using AIClassification.Domain.Aggregates;
 using AIClassification.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace AIClassification.Infrastructure.Persistence.Configurations;
 
@@ -30,12 +31,20 @@ public sealed class ClassificationConfiguration : IEntityTypeConfiguration<Invoi
             data.Property(d => d.VendorName).HasMaxLength(200).IsRequired(false);
             data.Property(d => d.TotalAmount).HasColumnType("decimal(18,2)");
             data.Property(d => d.Currency).HasMaxLength(10);
+            data.Property(d => d.IssueDate);
+            data.Property(d => d.DueDate);
             
             // Save List<string> as a single string separated by semicolons
+            var valueComparer = new ValueComparer<List<string>>(
+                (c1, c2) => c1!.SequenceEqual(c2!),
+                c => c.Aggregate(0, (a, v) => HashCode.Combine(a, v.GetHashCode())),
+                c => c.ToList());
+
             data.Property(d => d.LineItems)
                 .HasConversion(
                     v => string.Join(";", v),
-                    v => v.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).ToList());
+                    v => v.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries).ToList())
+                .Metadata.SetValueComparer(valueComparer);
         });
     }
 }

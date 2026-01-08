@@ -90,12 +90,75 @@
       "Humanizer.Core/2.14.1": {
         "type": "package",
         "compile": {
-          "lib/net6.0/_._": {
+          "lib/net6.0/Humanizer.dll": {
             "related": ".xml"
           }
         },
         "runtime": {
           "lib/net6.0/Humanizer.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "Json.More.Net/2.1.1": {
+        "type": "package",
+        "compile": {
+          "lib/net9.0/Json.More.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Json.More.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "JsonPointer.Net/5.3.1": {
+        "type": "package",
+        "dependencies": {
+          "Humanizer.Core": "2.14.1",
+          "Json.More.Net": "2.1.1"
+        },
+        "compile": {
+          "lib/net9.0/JsonPointer.Net.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/JsonPointer.Net.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "JsonSchema.Net/7.3.4": {
+        "type": "package",
+        "dependencies": {
+          "JsonPointer.Net": "5.3.1"
+        },
+        "compile": {
+          "lib/net9.0/JsonSchema.Net.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/JsonSchema.Net.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
+      "JsonSchema.Net.Generation/5.0.4": {
+        "type": "package",
+        "dependencies": {
+          "Humanizer.Core": "2.14.1",
+          "JsonSchema.Net": "7.3.4"
+        },
+        "compile": {
+          "lib/net9.0/JsonSchema.Net.Generation.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/JsonSchema.Net.Generation.dll": {
             "related": ".xml"
           }
         }
@@ -978,6 +1041,22 @@
           "buildTransitive/_._": {}
         }
       },
+      "Mscc.GenerativeAI/3.0.2": {
+        "type": "package",
+        "dependencies": {
+          "JsonSchema.Net.Generation": "5.0.4"
+        },
+        "compile": {
+          "lib/net10.0/Mscc.GenerativeAI.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net10.0/Mscc.GenerativeAI.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Newtonsoft.Json/13.0.3": {
         "type": "package",
         "compile": {
@@ -1391,6 +1470,50 @@
           }
         }
       },
+      "AIClassification.Application/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "AIClassification.Domain": "1.0.0",
+          "Shared.Application": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/AIClassification.Application.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/AIClassification.Application.dll": {}
+        }
+      },
+      "AIClassification.Domain/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Shared.Domain": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/AIClassification.Domain.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/AIClassification.Domain.dll": {}
+        }
+      },
+      "AIClassification.Infrastructure/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "AIClassification.Application": "1.0.0",
+          "AIClassification.Domain": "1.0.0",
+          "Microsoft.EntityFrameworkCore.SqlServer": "10.0.0",
+          "Mscc.GenerativeAI": "3.0.2",
+          "Shared.Infrastructure": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/AIClassification.Infrastructure.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/AIClassification.Infrastructure.dll": {}
+        }
+      },
       "InvoiceManagement.Application/1.0.0": {
         "type": "project",
         "framework": ".NETCoreApp,Version=v10.0",
@@ -1479,6 +1602,41 @@
         },
         "runtime": {
           "bin/placeholder/PaymentTracking.Infrastructure.dll": {}
+        }
+      },
+      "Reporting.Application/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/Reporting.Application.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Reporting.Application.dll": {}
+        }
+      },
+      "Reporting.Domain/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/Reporting.Domain.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Reporting.Domain.dll": {}
+        }
+      },
+      "Reporting.Infrastructure/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "dependencies": {
+          "Microsoft.EntityFrameworkCore.SqlServer": "10.0.0",
+          "Reporting.Domain": "1.0.0",
+          "Shared.Infrastructure": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Reporting.Infrastructure.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Reporting.Infrastructure.dll": {}
         }
       },
       "Shared.Application/1.0.0": {
@@ -1690,6 +1848,89 @@
         "lib/netstandard2.0/Humanizer.dll",
         "lib/netstandard2.0/Humanizer.xml",
         "logo.png"
+      ]
+    },
+    "Json.More.Net/2.1.1": {
+      "sha512": "ZXAKl2VsdnIZeUo1PFII3Oi1m1L4YQjEyDjygHfHln5vgsjgIo749X6xWkv7qFYp8RROES+vOEfDcvvoVgs8kA==",
+      "type": "package",
+      "path": "json.more.net/2.1.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "README.md",
+        "json-logo-256.png",
+        "json.more.net.2.1.1.nupkg.sha512",
+        "json.more.net.nuspec",
+        "lib/net8.0/Json.More.dll",
+        "lib/net8.0/Json.More.xml",
+        "lib/net9.0/Json.More.dll",
+        "lib/net9.0/Json.More.xml",
+        "lib/netstandard2.0/Json.More.dll",
+        "lib/netstandard2.0/Json.More.xml"
+      ]
+    },
+    "JsonPointer.Net/5.3.1": {
+      "sha512": "3e2OJjU0OaE26XC/klgxbJuXvteFWTDJIJv0ITYWcJEoskq7jzUwPSC1s0iz4wPPQnfN7vwwFmg2gJfwRAPwgw==",
+      "type": "package",
+      "path": "jsonpointer.net/5.3.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "README.md",
+        "json-logo-256.png",
+        "jsonpointer.net.5.3.1.nupkg.sha512",
+        "jsonpointer.net.nuspec",
+        "lib/net8.0/JsonPointer.Net.dll",
+        "lib/net8.0/JsonPointer.Net.xml",
+        "lib/net9.0/JsonPointer.Net.dll",
+        "lib/net9.0/JsonPointer.Net.xml",
+        "lib/netstandard2.0/JsonPointer.Net.dll",
+        "lib/netstandard2.0/JsonPointer.Net.xml"
+      ]
+    },
+    "JsonSchema.Net/7.3.4": {
+      "sha512": "7GggWrdzKrtGWETRn3dcMnmuLSyWaDkBK94TK80LEHQEVz4bmsQc7FYO7qL40RDdZU2YPz5d98aT9lW5OYExuA==",
+      "type": "package",
+      "path": "jsonschema.net/7.3.4",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "README.md",
+        "json-logo-256.png",
+        "jsonschema.net.7.3.4.nupkg.sha512",
+        "jsonschema.net.nuspec",
+        "lib/net8.0/JsonSchema.Net.dll",
+        "lib/net8.0/JsonSchema.Net.pdb",
+        "lib/net8.0/JsonSchema.Net.xml",
+        "lib/net9.0/JsonSchema.Net.dll",
+        "lib/net9.0/JsonSchema.Net.pdb",
+        "lib/net9.0/JsonSchema.Net.xml",
+        "lib/netstandard2.0/JsonSchema.Net.dll",
+        "lib/netstandard2.0/JsonSchema.Net.pdb",
+        "lib/netstandard2.0/JsonSchema.Net.xml"
+      ]
+    },
+    "JsonSchema.Net.Generation/5.0.4": {
+      "sha512": "VNcQd95tHbpWRvKjRfWOjFXHRPKH+zMBEmrgQCavsDZYI3+zMjCyKXTtOScI2dMbYllgYbVu9aH7JHgluE1lpA==",
+      "type": "package",
+      "path": "jsonschema.net.generation/5.0.4",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "LICENSE",
+        "README.md",
+        "json-logo-256.png",
+        "jsonschema.net.generation.5.0.4.nupkg.sha512",
+        "jsonschema.net.generation.nuspec",
+        "lib/net8.0/JsonSchema.Net.Generation.dll",
+        "lib/net8.0/JsonSchema.Net.Generation.xml",
+        "lib/net9.0/JsonSchema.Net.Generation.dll",
+        "lib/net9.0/JsonSchema.Net.Generation.xml",
+        "lib/netstandard2.0/JsonSchema.Net.Generation.dll",
+        "lib/netstandard2.0/JsonSchema.Net.Generation.xml"
       ]
     },
     "MediatR/12.4.1": {
@@ -3672,6 +3913,27 @@
         "readme.md"
       ]
     },
+    "Mscc.GenerativeAI/3.0.2": {
+      "sha512": "69968hdubWJK9Niol+7AONPiKuAOl5OPmIfCfkronbIY7bRnf2RFcG8pSUuL80kQw+f/jr9rRmOBz2xxjGxAKQ==",
+      "type": "package",
+      "path": "mscc.generativeai/3.0.2",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "MsccGenerativeAi-icon-nuget.png",
+        "README.md",
+        "lib/net10.0/Mscc.GenerativeAI.dll",
+        "lib/net10.0/Mscc.GenerativeAI.xml",
+        "lib/net8.0/Mscc.GenerativeAI.dll",
+        "lib/net8.0/Mscc.GenerativeAI.xml",
+        "lib/net9.0/Mscc.GenerativeAI.dll",
+        "lib/net9.0/Mscc.GenerativeAI.xml",
+        "lib/netstandard2.0/Mscc.GenerativeAI.dll",
+        "lib/netstandard2.0/Mscc.GenerativeAI.xml",
+        "mscc.generativeai.3.0.2.nupkg.sha512",
+        "mscc.generativeai.nuspec"
+      ]
+    },
     "Newtonsoft.Json/13.0.3": {
       "sha512": "HrC5BXdl00IP9zeV+0Z848QWPAoCr9P3bDEZguI+gkLcBKAOxix/tLEAAHC+UvDNPv4a2d18lOReHMOagPa+zQ==",
       "type": "package",
@@ -4297,6 +4559,21 @@
         "useSharedDesignerContext.txt"
       ]
     },
+    "AIClassification.Application/1.0.0": {
+      "type": "project",
+      "path": "../../Services/AIClassification/AIClassification.Application/AIClassification.Application.csproj",
+      "msbuildProject": "../../Services/AIClassification/AIClassification.Application/AIClassification.Application.csproj"
+    },
+    "AIClassification.Domain/1.0.0": {
+      "type": "project",
+      "path": "../../Services/AIClassification/AIClassification.Domain/AIClassification.Domain.csproj",
+      "msbuildProject": "../../Services/AIClassification/AIClassification.Domain/AIClassification.Domain.csproj"
+    },
+    "AIClassification.Infrastructure/1.0.0": {
+      "type": "project",
+      "path": "../../Services/AIClassification/AIClassification.Infrastructure/AIClassification.Infrastructure.csproj",
+      "msbuildProject": "../../Services/AIClassification/AIClassification.Infrastructure/AIClassification.Infrastructure.csproj"
+    },
     "InvoiceManagement.Application/1.0.0": {
       "type": "project",
       "path": "../../Modules/InvoiceManagement/InvoiceManagement.Application/InvoiceManagement.Application.csproj",
@@ -4326,6 +4603,21 @@
       "type": "project",
       "path": "../../Modules/PaymentTracking/PaymentTracking.Infrastructure/PaymentTracking.Infrastructure.csproj",
       "msbuildProject": "../../Modules/PaymentTracking/PaymentTracking.Infrastructure/PaymentTracking.Infrastructure.csproj"
+    },
+    "Reporting.Application/1.0.0": {
+      "type": "project",
+      "path": "../../Modules/Reporting/Reporting.Application/Reporting.Application.csproj",
+      "msbuildProject": "../../Modules/Reporting/Reporting.Application/Reporting.Application.csproj"
+    },
+    "Reporting.Domain/1.0.0": {
+      "type": "project",
+      "path": "../../Modules/Reporting/Reporting.Domain/Reporting.Domain.csproj",
+      "msbuildProject": "../../Modules/Reporting/Reporting.Domain/Reporting.Domain.csproj"
+    },
+    "Reporting.Infrastructure/1.0.0": {
+      "type": "project",
+      "path": "../../Modules/Reporting/Reporting.Infrastructure/Reporting.Infrastructure.csproj",
+      "msbuildProject": "../../Modules/Reporting/Reporting.Infrastructure/Reporting.Infrastructure.csproj"
     },
     "Shared.Application/1.0.0": {
       "type": "project",
@@ -4360,6 +4652,8 @@
   },
   "projectFileDependencyGroups": {
     "net10.0": [
+      "AIClassification.Application >= 1.0.0",
+      "AIClassification.Infrastructure >= 1.0.0",
       "FluentValidation.AspNetCore >= 11.3.0",
       "InvoiceManagement.Application >= 1.0.0",
       "InvoiceManagement.Infrastructure >= 1.0.0",
@@ -4368,6 +4662,8 @@
       "Microsoft.EntityFrameworkCore.Tools >= 10.0.0",
       "PaymentTracking.Application >= 1.0.0",
       "PaymentTracking.Infrastructure >= 1.0.0",
+      "Reporting.Application >= 1.0.0",
+      "Reporting.Infrastructure >= 1.0.0",
       "Shared.Application >= 1.0.0",
       "Shared.Infrastructure >= 1.0.0",
       "Swashbuckle.AspNetCore >= 7.2.0",
@@ -4412,11 +4708,23 @@
             "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\PaymentTracking\\PaymentTracking.Infrastructure\\PaymentTracking.Infrastructure.csproj": {
               "projectPath": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\PaymentTracking\\PaymentTracking.Infrastructure\\PaymentTracking.Infrastructure.csproj"
             },
+            "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\Reporting\\Reporting.Application\\Reporting.Application.csproj": {
+              "projectPath": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\Reporting\\Reporting.Application\\Reporting.Application.csproj"
+            },
+            "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\Reporting\\Reporting.Infrastructure\\Reporting.Infrastructure.csproj": {
+              "projectPath": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\Reporting\\Reporting.Infrastructure\\Reporting.Infrastructure.csproj"
+            },
             "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\VendorManagement\\VendorManagement.Application\\VendorManagement.Application.csproj": {
               "projectPath": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\VendorManagement\\VendorManagement.Application\\VendorManagement.Application.csproj"
             },
             "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\VendorManagement\\VendorManagement.Infrastructure\\VendorManagement.Infrastructure.csproj": {
               "projectPath": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\VendorManagement\\VendorManagement.Infrastructure\\VendorManagement.Infrastructure.csproj"
+            },
+            "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Services\\AIClassification\\AIClassification.Application\\AIClassification.Application.csproj": {
+              "projectPath": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Services\\AIClassification\\AIClassification.Application\\AIClassification.Application.csproj"
+            },
+            "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Services\\AIClassification\\AIClassification.Infrastructure\\AIClassification.Infrastructure.csproj": {
+              "projectPath": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Services\\AIClassification\\AIClassification.Infrastructure\\AIClassification.Infrastructure.csproj"
             },
             "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Application\\Shared.Application.csproj": {
               "projectPath": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Shared\\Shared.Application\\Shared.Application.csproj"

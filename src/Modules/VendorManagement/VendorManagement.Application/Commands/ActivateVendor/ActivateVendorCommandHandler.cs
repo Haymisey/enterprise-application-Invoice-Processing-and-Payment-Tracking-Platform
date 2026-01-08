@@ -12,11 +12,11 @@ namespace VendorManagement.Application.Commands.ActivateVendor;
 internal sealed class ActivateVendorCommandHandler : ICommandHandler<ActivateVendorCommand>
 {
     private readonly IVendorRepository _vendorRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IVendorUnitOfWork _unitOfWork;
 
     public ActivateVendorCommandHandler(
         IVendorRepository vendorRepository,
-        IUnitOfWork unitOfWork)
+        IVendorUnitOfWork unitOfWork)
     {
         _vendorRepository = vendorRepository;
         _unitOfWork = unitOfWork;

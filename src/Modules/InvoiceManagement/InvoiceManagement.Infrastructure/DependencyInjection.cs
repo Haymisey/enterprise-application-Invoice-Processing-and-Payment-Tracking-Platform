@@ -1,6 +1,7 @@
 using InvoiceManagement.Domain.Repositories;
 using InvoiceManagement.Infrastructure.Persistence;
 using InvoiceManagement.Infrastructure.Persistence.Repositories;
+using InvoiceManagement.Infrastructure.EventConsumers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,9 +31,14 @@ public static class DependencyInjection
         // Register repositories
         services.AddScoped<IInvoiceRepository, InvoiceRepository>();
         
-        // Register Unit of Work
+        // Register Unit of Work for Invoice module
+        services.AddScoped<IInvoiceUnitOfWork>(sp => sp.GetRequiredService<InvoiceDbContext>());
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<InvoiceDbContext>());
         services.AddScoped<DbContext>(sp => sp.GetRequiredService<InvoiceDbContext>());
+
+        // Register Event Consumers
+        services.AddHostedService<InvoiceExtractedEventConsumer>();
+        services.AddHostedService<SuspiciousInvoiceEventConsumer>();
 
         return services;
     }

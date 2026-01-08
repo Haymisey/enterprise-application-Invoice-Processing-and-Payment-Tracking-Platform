@@ -62,6 +62,13 @@ internal sealed class InvoiceRepository : IInvoiceRepository
             .AnyAsync(i => i.InvoiceNumber == invoiceNumber, cancellationToken);
     }
 
+    public async Task<Invoice?> GetByClassificationIdAsync(Guid classificationId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Invoices
+            .Include(i => i.LineItems)
+            .FirstOrDefaultAsync(i => i.ClassificationId == classificationId, cancellationToken);
+    }
+
     public async Task AddAsync(Invoice aggregate, CancellationToken cancellationToken = default)
     {
         await _context.Invoices.AddAsync(aggregate, cancellationToken);

@@ -32,8 +32,7 @@ public static class DependencyInjection
         
         // Register Unit of Work for Payment Tracking module
         // Register PaymentDbContext as IUnitOfWork
-        // NOTE: This registration order matters - PaymentTracking should be registered LAST in Program.cs
-        // to ensure PaymentTracking handlers get PaymentDbContext instead of other modules' DbContexts
+        services.AddScoped<IPaymentUnitOfWork>(sp => sp.GetRequiredService<PaymentDbContext>());
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<PaymentDbContext>());
         services.AddScoped<DbContext>(sp => sp.GetRequiredService<PaymentDbContext>());
 

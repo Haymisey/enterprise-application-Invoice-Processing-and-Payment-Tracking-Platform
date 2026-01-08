@@ -12,11 +12,11 @@ namespace InvoiceManagement.Application.Commands.ApproveInvoice;
 internal sealed class ApproveInvoiceCommandHandler : ICommandHandler<ApproveInvoiceCommand>
 {
     private readonly IInvoiceRepository _invoiceRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IInvoiceUnitOfWork _unitOfWork;
 
     public ApproveInvoiceCommandHandler(
         IInvoiceRepository invoiceRepository,
-        IUnitOfWork unitOfWork)
+        IInvoiceUnitOfWork unitOfWork)
     {
         _invoiceRepository = invoiceRepository;
         _unitOfWork = unitOfWork;

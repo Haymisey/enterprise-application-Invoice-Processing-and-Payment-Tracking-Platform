@@ -16,6 +16,7 @@ public sealed class Invoice : AggregateRoot<InvoiceId>
 
     public string InvoiceNumber { get; private set; }
     public VendorId VendorId { get; private set; }
+    public Guid? ClassificationId { get; private set; }
     public InvoiceStatus Status { get; private set; }
     public InvoiceDates Dates { get; private set; }
     public Money SubTotal { get; private set; }
@@ -109,7 +110,8 @@ public sealed class Invoice : AggregateRoot<InvoiceId>
         decimal totalAmount,
         string currency,
         double confidenceScore,
-        string extractedBy)
+        string extractedBy,
+        Guid? classificationId = null)
     {
         var invoice = new Invoice(
             InvoiceId.Create(),
@@ -119,6 +121,7 @@ public sealed class Invoice : AggregateRoot<InvoiceId>
             extractedBy,
             $"AI Extracted with {confidenceScore:P0} confidence");
 
+        invoice.ClassificationId = classificationId;
         invoice.TotalAmount = Money.Create(totalAmount, currency);
 
         invoice.RaiseDomainEvent(new InvoiceExtractedEvent(

@@ -7,6 +7,10 @@ using PaymentTracking.Infrastructure;
 using PaymentTracking.Infrastructure.Persistence;
 using VendorManagement.Infrastructure;
 using VendorManagement.Infrastructure.Persistence;
+using AIClassification.Infrastructure;
+using AIClassification.Infrastructure.Persistence;
+using Reporting.Infrastructure;
+using Reporting.Infrastructure.Persistence;
 using MediatR;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
@@ -26,6 +30,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
 builder.Services.AddControllers();
+builder.Services.AddHttpClient();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -72,7 +77,8 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssemblies(
         typeof(InvoiceManagement.Application.Commands.CreateInvoice.CreateInvoiceCommand).Assembly,
         typeof(PaymentTracking.Application.Commands.SchedulePayment.SchedulePaymentCommand).Assembly,
-        typeof(VendorManagement.Application.Commands.RegisterVendor.RegisterVendorCommand).Assembly
+        typeof(VendorManagement.Application.Commands.RegisterVendor.RegisterVendorCommand).Assembly,
+        typeof(AIClassification.Application.Commands.ClassifyInvoice.ClassifyInvoiceCommand).Assembly
     );
     cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
 });
@@ -91,6 +97,12 @@ builder.Services.AddVendorManagementInfrastructure(builder.Configuration);
 // Add Payment Tracking module LAST - this ensures PaymentTracking handlers get PaymentDbContext
 builder.Services.AddPaymentTrackingInfrastructure(builder.Configuration);
 
+// Add AI Classification module
+builder.Services.AddAIClassificationInfrastructure(builder.Configuration);
+
+// Add Reporting module
+builder.Services.AddReportingInfrastructure(builder.Configuration);
+
 // Add JWT Authentication with Keycloak
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -107,7 +119,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = keycloakConfig.GetValue<bool>("ValidateAudience"),
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ClockSkew = TimeSpan.Zero
+            ClockSkew = TimeSpan.Zero,
+            NameClaimType = "preferred_username",
+            RoleClaimType = "role" // Use "role" as the claim type for roles
         };
 
         options.Events = new JwtBearerEvents
@@ -119,17 +133,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             },
             OnTokenValidated = context =>
             {
-                Console.WriteLine("Token validated successfully");
+                Console.WriteLine("✅ Token validated successfully");
 
-                // Map Keycloak realm_access roles to ClaimTypes.Role
                 if (context.Principal?.Identity is ClaimsIdentity claimsIdentity)
                 {
-                    var realmAccess = context.Principal.FindFirst("realm_access")?.Value;
-                    if (!string.IsNullOrEmpty(realmAccess))
+                    // Inspect all claims (for debugging)
+                    foreach (var claim in claimsIdentity.Claims)
+                    {
+                        Console.WriteLine($"🔍 Claim: {claim.Type} = {claim.Value}");
+                    }
+
+                    // Map Keycloak realm_access roles
+                    var realmAccessClaim = context.Principal.FindFirst("realm_access");
+                    if (realmAccessClaim != null)
                     {
                         try 
                         {
-                            using var doc = JsonDocument.Parse(realmAccess);
+                            using var doc = JsonDocument.Parse(realmAccessClaim.Value);
                             if (doc.RootElement.TryGetProperty("roles", out var rolesElement))
                             {
                                 foreach (var role in rolesElement.EnumerateArray())
@@ -137,16 +157,21 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                                     var roleValue = role.GetString();
                                     if (!string.IsNullOrEmpty(roleValue))
                                     {
-                                        claimsIdentity.AddClaim(new Claim(ClaimTypes.Role, roleValue));
-                                        Console.WriteLine($"Mapped Keycloak role: {roleValue}");
+                                        // Use "role" to match RoleClaimType set in TokenValidationParameters
+                                        claimsIdentity.AddClaim(new Claim("role", roleValue));
+                                        Console.WriteLine($"🎭 Mapped Keycloak role: {roleValue}");
                                     }
                                 }
                             }
                         }
                         catch (Exception ex)
                         {
-                            Console.WriteLine($"Error parsing realm_access roles: {ex.Message}");
+                            Console.WriteLine($"❌ Error parsing realm_access roles: {ex.Message}");
                         }
+                    }
+                    else
+                    {
+                        Console.WriteLine("⚠️ Warning: 'realm_access' claim not found in token.");
                     }
                 }
 
@@ -211,6 +236,12 @@ if (app.Environment.IsDevelopment())
             
             var vendorContext = services.GetRequiredService<VendorDbContext>();
             await vendorContext.Database.MigrateAsync();
+
+            var classificationContext = services.GetRequiredService<ClassificationDbContext>();
+            await classificationContext.Database.MigrateAsync();
+
+            var reportingContext = services.GetRequiredService<ReportingDbContext>();
+            await reportingContext.Database.MigrateAsync();
             
             Console.WriteLine("✅ Databases migrated and updated successfully.");
         }

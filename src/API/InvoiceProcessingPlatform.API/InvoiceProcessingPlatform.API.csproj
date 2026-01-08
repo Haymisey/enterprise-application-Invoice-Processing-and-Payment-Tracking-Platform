@@ -26,6 +26,10 @@
     <ProjectReference Include="..\..\Modules\PaymentTracking\PaymentTracking.Infrastructure\PaymentTracking.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Modules\VendorManagement\VendorManagement.Application\VendorManagement.Application.csproj" />
     <ProjectReference Include="..\..\Modules\VendorManagement\VendorManagement.Infrastructure\VendorManagement.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Services\AIClassification\AIClassification.Application\AIClassification.Application.csproj" />
+    <ProjectReference Include="..\..\Services\AIClassification\AIClassification.Infrastructure\AIClassification.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\Reporting\Reporting.Application\Reporting.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\Reporting\Reporting.Infrastructure\Reporting.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

@@ -34,4 +34,9 @@ public interface IInvoiceRepository : IRepository<Invoice, InvoiceId>
     /// Checks if an invoice number already exists (for duplicate detection).
     /// </summary>
     Task<bool> ExistsWithInvoiceNumberAsync(string invoiceNumber, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets an invoice by its associated AI classification ID.
+    /// </summary>
+    Task<Invoice?> GetByClassificationIdAsync(Guid classificationId, CancellationToken cancellationToken = default);
 }

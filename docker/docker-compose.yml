@@ -5,8 +5,8 @@ services:
       context: ..
       dockerfile: src/Services/AIClassification/AIClassification.API/Dockerfile
     environment:
-      - ApiKey=AIzaSyBS7_ENSzrO_1OXHPVNodFVGTsPBBxg9Z0
-      - Gemini__ApiKey=AIzaSyBS7_ENSzrO_1OXHPVNodFVGTsPBBxg9Z0
+      - ApiKey=YOUR_KEY_HERE
+      - Gemini__ApiKey=YOUR_KEY_HERE
       - ConnectionStrings__Database=Server=sqlserver;Database=AIClassificationDb;User Id=sa;Password=Invoice@SecurePass123!;TrustServerCertificate=True;
     container_name: ai-classification-api
     networks:
@@ -61,10 +61,11 @@ services:
     environment:
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin123
-      - KC_DB=dev-mem
     command: start-dev
     ports:
       - "8888:8080"
+    volumes:
+      - keycloak-data:/opt/keycloak/data/
     networks:
       - invoice-network
     depends_on:
@@ -90,3 +91,4 @@ networks:
 volumes:
   sqlserver-data:
   rabbitmq-data:
+  keycloak-data:

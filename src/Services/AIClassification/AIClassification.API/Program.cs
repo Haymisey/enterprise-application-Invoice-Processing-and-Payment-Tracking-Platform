@@ -18,7 +18,7 @@ builder.Services.AddMediatR(cfg =>
 });
 
 // Add layers
-builder.Services.AddInfrastructure(builder.Configuration);
+builder.Services.AddAIClassificationInfrastructure(builder.Configuration);
 
 var app = builder.Build();
 

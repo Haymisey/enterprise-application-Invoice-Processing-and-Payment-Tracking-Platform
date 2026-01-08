@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\Reporting\\Reporting.Domain\\Reporting.Domain.csproj": {}
+    "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\Reporting\\Reporting.Domain\\Reporting.Domain.csproj": {}
   },
   "projects": {
-    "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\Reporting\\Reporting.Domain\\Reporting.Domain.csproj": {
+    "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\Reporting\\Reporting.Domain\\Reporting.Domain.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\Reporting\\Reporting.Domain\\Reporting.Domain.csproj",
+        "projectUniqueName": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\Reporting\\Reporting.Domain\\Reporting.Domain.csproj",
         "projectName": "Reporting.Domain",
-        "projectPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\Reporting\\Reporting.Domain\\Reporting.Domain.csproj",
-        "packagesPath": "C:\\Users\\hayma\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\Reporting\\Reporting.Domain\\obj\\",
+        "projectPath": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\Reporting\\Reporting.Domain\\Reporting.Domain.csproj",
+        "packagesPath": "C:\\Users\\hareg\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\hareg\\OneDrive\\Documents\\EAD\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Modules\\Reporting\\Reporting.Domain\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\hayma\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\hareg\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net10.0"
@@ -59,7 +59,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.100/PortableRuntimeIdentifierGraph.json",
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\10.0.101/PortableRuntimeIdentifierGraph.json",
           "packagesToPrune": {
             "Microsoft.CSharp": "(,4.7.32767]",
             "Microsoft.VisualBasic": "(,10.4.32767]",

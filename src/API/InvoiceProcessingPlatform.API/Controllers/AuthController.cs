@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace InvoiceProcessingPlatform.API.Controllers;
 
@@ -11,6 +13,51 @@ namespace InvoiceProcessingPlatform.API.Controllers;
 [Route("api/[controller]")]
 public class AuthController : ControllerBase
 {
+    private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IConfiguration _configuration;
+
+    public AuthController(IHttpClientFactory httpClientFactory, IConfiguration _configuration)
+    {
+        _httpClientFactory = httpClientFactory;
+        this._configuration = _configuration;
+    }
+
+    /// <summary>
+    /// Login and get JWT token from Keycloak.
+    /// </summary>
+    [HttpPost("login")]
+    [ProducesResponseType(typeof(TokenResponse), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    {
+        var keycloakConfig = _configuration.GetSection("Keycloak");
+        var authority = keycloakConfig["Authority"];
+        var tokenEndpoint = $"{authority}/protocol/openid-connect/token";
+
+        using var client = _httpClientFactory.CreateClient();
+
+        var content = new FormUrlEncodedContent(new[]
+        {
+            new KeyValuePair<string, string>("client_id", keycloakConfig["Audience"] ?? "invoice-api"),
+            new KeyValuePair<string, string>("client_secret", keycloakConfig["ClientSecret"] ?? string.Empty),
+            new KeyValuePair<string, string>("username", request.Username),
+            new KeyValuePair<string, string>("password", request.Password),
+            new KeyValuePair<string, string>("grant_type", "password")
+        });
+
+        var response = await client.PostAsync(tokenEndpoint, content);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            return Unauthorized(new { message = "Invalid credentials or unauthorized client" });
+        }
+
+        var jsonResponse = await response.Content.ReadAsStringAsync();
+        var tokenData = JsonSerializer.Deserialize<TokenResponse>(jsonResponse);
+
+        return Ok(tokenData);
+    }
+
     /// <summary>
     /// Get current user information from JWT token.
     /// </summary>
@@ -84,3 +131,11 @@ public record ClaimInfo
     public string Type { get; init; } = string.Empty;
     public string Value { get; init; } = string.Empty;
 }
+
+public record LoginRequest(string Username, string Password);
+
+public record TokenResponse(
+    [property: JsonPropertyName("access_token")] string AccessToken,
+    [property: JsonPropertyName("expires_in")] int ExpiresIn,
+    [property: JsonPropertyName("refresh_token")] string RefreshToken,
+    [property: JsonPropertyName("token_type")] string TokenType);

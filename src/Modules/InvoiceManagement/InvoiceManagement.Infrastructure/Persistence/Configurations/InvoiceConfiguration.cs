@@ -32,12 +32,14 @@ public sealed class InvoiceConfiguration : IEntityTypeConfiguration<Invoice>
         builder.HasIndex(i => i.InvoiceNumber)
             .IsUnique();
 
-        // Configure VendorId value object
         builder.Property(i => i.VendorId)
             .HasConversion(
                 id => id.Value,
                 value => VendorId.Create(value))
             .HasColumnName("VendorId");
+
+        builder.Property(i => i.ClassificationId)
+            .IsRequired(false);
 
         builder.Property(i => i.Status)
             .IsRequired()

@@ -12,11 +12,11 @@ namespace PaymentTracking.Application.Commands.CompletePayment;
 internal sealed class CompletePaymentCommandHandler : ICommandHandler<CompletePaymentCommand>
 {
     private readonly IPaymentRepository _paymentRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IPaymentUnitOfWork _unitOfWork;
 
     public CompletePaymentCommandHandler(
         IPaymentRepository paymentRepository,
-        IUnitOfWork unitOfWork)
+        IPaymentUnitOfWork unitOfWork)
     {
         _paymentRepository = paymentRepository;
         _unitOfWork = unitOfWork;

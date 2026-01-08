@@ -3,6 +3,7 @@ using AIClassification.Domain.Repositories;
 using AIClassification.Infrastructure.AI;
 using AIClassification.Infrastructure.Persistence;
 using AIClassification.Infrastructure.Persistence.Repositories;
+using AIClassification.Infrastructure.EventConsumers;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,10 +13,10 @@ namespace AIClassification.Infrastructure;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddAIClassificationInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         // 1. Database Setup
-        var connectionString = configuration.GetConnectionString("Database");
+        var connectionString = configuration.GetConnectionString("ClassificationDb");
         
         services.AddDbContext<ClassificationDbContext>((sp, options) =>
         {
@@ -25,14 +26,15 @@ public static class DependencyInjection
         // 2. Register Repositories
         services.AddScoped<IClassificationRepository, ClassificationRepository>();
         
-        // Register UnitOfWork (DbContext implements it implicitly in many Clean Arch patterns, 
-        // but often we need a wrapper. For simplicity, we can register Context as UnitOfWork 
-        // OR if you have a specific UnitOfWork implementation in Shared, use that.
-        // For this specific guide, we often cast Context to IUnitOfWork in handlers:
-        services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<ClassificationDbContext>());
+        // Register UnitOfWork
+        services.AddScoped<IAIUnitOfWork>(sp => sp.GetRequiredService<ClassificationDbContext>());
+        services.AddScoped<DbContext>(sp => sp.GetRequiredService<ClassificationDbContext>());
 
         // 3. Register AI Service
         services.AddScoped<IGeminiService, GeminiService>();
+
+        // 4. Register Event Consumers
+        services.AddHostedService<ClassificationStartedEventConsumer>();
 
         return services;
     }

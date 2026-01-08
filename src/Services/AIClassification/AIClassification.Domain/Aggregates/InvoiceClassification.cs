@@ -62,6 +62,14 @@ public sealed class InvoiceClassification : AggregateRoot<ClassificationId>
         FraudReason = fraudReason;
         CompletedAt = DateTime.UtcNow;
 
+        // Always raise completion event if we have extracted data
+        RaiseDomainEvent(new ClassificationCompletedEvent(
+            Id.Value,
+            extractedData.InvoiceNumber,
+            extractedData.VendorName,
+            extractedData.TotalAmount,
+            confidenceScore));
+
         if (isFraudulent)
         {
             Status = ClassificationStatus.FraudDetected;
@@ -75,12 +83,6 @@ public sealed class InvoiceClassification : AggregateRoot<ClassificationId>
         else
         {
             Status = ClassificationStatus.Completed;
-            RaiseDomainEvent(new ClassificationCompletedEvent(
-                Id.Value,
-                extractedData.InvoiceNumber,
-                extractedData.VendorName,
-                extractedData.TotalAmount,
-                confidenceScore));
         }
     }
 

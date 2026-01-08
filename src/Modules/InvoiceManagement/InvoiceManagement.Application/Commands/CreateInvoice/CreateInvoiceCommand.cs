@@ -12,7 +12,8 @@ public sealed record CreateInvoiceCommand(
     DateTime DueDate,
     string CreatedBy,
     string? Notes,
-    List<CreateInvoiceLineItemDto> LineItems) : ICommand<Guid>;
+    List<CreateInvoiceLineItemDto> LineItems,
+    Guid? ClassificationId = null) : ICommand<Guid>;
 
 public sealed record CreateInvoiceLineItemDto(
     string Description,
