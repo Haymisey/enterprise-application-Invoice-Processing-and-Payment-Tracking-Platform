@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "d573VuMAOyh3OcJbuCDoFA1ctmU3w0xN2E90SEUk32RhBHBZpg5ZPoOit3MBTI0m9sfGKX6n0FfWkdgxj6EmZw==",
+  "dgSpecHash": "dK3wzb0v0JA=",
   "success": true,
-  "projectFilePath": "/home/saw/Desktop/EAD/enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform/src/Services/AIClassification/AIClassification.Domain/AIClassification.Domain.csproj",
+  "projectFilePath": "C:\\Users\\hayma\\OneDrive\\Desktop\\EAD-Lab\\enterprise-application-Invoice-Processing-and-Payment-Tracking-Platform\\src\\Services\\AIClassification\\AIClassification.Domain\\AIClassification.Domain.csproj",
   "expectedPackageFiles": [],
   "logs": []
 }

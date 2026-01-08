@@ -37,6 +37,9 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<PaymentDbContext>());
         services.AddScoped<DbContext>(sp => sp.GetRequiredService<PaymentDbContext>());
 
+        // Register event consumer for inter-module communication
+        services.AddHostedService<EventConsumers.InvoiceApprovedEventConsumer>();
+
         return services;
     }
 }
