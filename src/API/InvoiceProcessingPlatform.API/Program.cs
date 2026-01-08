@@ -18,12 +18,48 @@ using Microsoft.EntityFrameworkCore;
 using InvoiceManagement.Application.Commands.CreateInvoice;
 using PaymentTracking.Application.Commands.SchedulePayment;
 using VendorManagement.Application.Commands.RegisterVendor;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
 builder.Services.AddControllers();
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Invoice Processing Platform API",
+        Version = "v1",
+        Description = "API for Invoice Processing and Payment Tracking Platform"
+    });
+    
+    // Add JWT Bearer authentication to Swagger
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below. Example: 'Bearer YOUR_TOKEN_HERE'",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT"
+    });
+    
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();
@@ -118,38 +154,15 @@ app.UseExceptionHandler();
 
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
-    
-    // Serve Swagger UI from a static HTML file
-    app.MapGet("/swagger", async context =>
+    app.UseSwagger();
+    app.UseSwaggerUI(c =>
     {
-        var html = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>Invoice Processing Platform API - Swagger UI</title>
-                <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.10.5/swagger-ui.css" />
-            </head>
-            <body>
-                <div id="swagger-ui"></div>
-                <script src="https://unpkg.com/swagger-ui-dist@5.10.5/swagger-ui-bundle.js"></script>
-                <script>
-                    window.onload = function() {
-                        SwaggerUIBundle({
-                            url: "/openapi/v1.json",
-                            dom_id: "#swagger-ui",
-                            presets: [
-                                SwaggerUIBundle.presets.apis,
-                                SwaggerUIBundle.presets.standalone
-                            ]
-                        });
-                    };
-                </script>
-            </body>
-            </html>
-            """;
-        context.Response.ContentType = "text/html";
-        await context.Response.WriteAsync(html);
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Invoice Processing Platform API v1");
+        c.RoutePrefix = "swagger"; // Swagger UI will be available at /swagger
+        c.DisplayRequestDuration();
+        c.EnableDeepLinking();
+        c.EnableFilter();
+        c.ShowExtensions();
     });
 
     // Initialize Databases
