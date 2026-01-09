@@ -52,14 +52,24 @@ public sealed class SuspiciousInvoiceEventConsumer : RabbitMqConsumer
             }
 
             // We need to find the invoice that was created for this classification
+            // Because of eventual consistency, the InvoiceExtractedEventConsumer might still be working.
+            // We'll retry a few times with a delay.
             var repository = serviceProvider.GetRequiredService<IInvoiceRepository>();
-            var invoice = await repository.GetByClassificationIdAsync(eventData.ClassificationId, cancellationToken);
+            InvoiceManagement.Domain.Aggregates.Invoice? invoice = null;
+            
+            for (int i = 0; i < 5; i++)
+            {
+                invoice = await repository.GetByClassificationIdAsync(eventData.ClassificationId, cancellationToken);
+                if (invoice is not null) break;
+
+                _logger.LogInformation("Invoice for classification {ClassificationId} not found yet. Retrying in 2s... (Attempt {Attempt}/5)", 
+                    eventData.ClassificationId, i + 1);
+                await Task.Delay(2000, cancellationToken);
+            }
 
             if (invoice is null)
             {
-                // This might happen if the InvoiceExtractedEvent hasn't been processed yet.
-                // In a production app, we'd use a retry policy or a delay.
-                _logger.LogWarning("Invoice for classification {ClassificationId} not found. Suggesting retry.", eventData.ClassificationId);
+                _logger.LogWarning("Invoice for classification {ClassificationId} not found after retries. Letting it requeue.", eventData.ClassificationId);
                 throw new Exception($"Invoice for classification {eventData.ClassificationId} not found yet.");
             }
 
