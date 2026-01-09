@@ -19,16 +19,16 @@ public class ReportingApiTests : IClassFixture<WebApplicationFactory<InvoiceProc
     [Fact]
     public async Task GetSummary_ReturnsOk_AndValidShape()
     {
-        // Arrange
+      
         var client = _factory.CreateClient();
 
-        // Act
+     
         var response = await client.GetAsync("/api/reports/summary");
 
-        // Assert status
+    
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-        // Assert basic JSON shape (anonymous type)
+        
         var summary = await response.Content.ReadFromJsonAsync(new
         {
             TotalInvoices = 0,
